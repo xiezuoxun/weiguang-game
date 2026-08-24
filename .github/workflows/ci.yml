@@ -1,0 +1,82 @@
+# 《微光归处》CI 工作流
+# 触发：push / PR 到 main 或 phase5* 分支时，跑层 0（契约门 + 自测 + 命名守护）+ 层 1（Unity EditMode）。
+# 层 1（Unity EditMode / G4/G5/G7）已启用，依赖仓库 Secrets 中的 UNITY_LICENSE（个人版免费 license .ulf 内容）。
+# 未配置该 secret 时 unity-tests job 会失败——属预期，需在 GitHub 仓库 Settings → Secrets → Actions 配置。
+name: CI
+
+on:
+  push:
+    branches: [main, "phase5*"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  contract-gate:
+    name: 层0 契约门 (I1)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run CI (层0；Unity 步自动 SKIP)
+        run: bash game/ci/run-ci.sh
+
+      - name: Upload artifacts (如有 Unity 产物)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-artifacts
+          path: artifacts/
+          if-no-files-found: ignore
+
+  # =============================================================================
+  # 层 1 · Unity EditMode 测试门（G4/G5/G7）—— 个人版免费激活（已启用）
+  # -----------------------------------------------------------------------------
+  # 前置（需在 GitHub 仓库侧完成，本机无法代劳）：
+  #   1. 仓库 Secrets（Settings → Secrets → Actions）配置 `UNITY_LICENSE`：
+  #        个人版免费 license 的 .ulf 内容（整段 XML 文本）。
+  #        macOS/Linux:  ~/.local/share/unity3d/Unity/Unity_lic.ulf
+  #        Windows:      %APPDATA%\Unity\Unity_lic.ulf
+  #   2. 未配置该 secret 时本 job 会失败（属预期）——属 license 缺失而非代码问题。
+  #   说明：个人版免费激活无需 serial；game-ci/unity-test-runner 会自动用
+  #        UNITY_LICENSE 激活容器内环境。若改用组织版 serial，则把
+  #        unityLicense 改为 unitySerial 并配 UNITY_SERIAL/UNITY_EMAIL/UNITY_PASSWORD。
+  # =============================================================================
+  unity-tests:
+    name: 层1 Unity EditMode 测试 (G4/G5/G7)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: game/Library
+          key: Library-${{ hashFiles('game/Assets/**', 'game/ProjectSettings/**') }}
+          restore-keys: Library-
+
+      - name: Run EditMode Tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: game
+          unityVersion: 2022.3.20f1
+          testPlatform: editmode
+          testCategory: EditMode
+          artifactsPath: artifacts
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload EditMode Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: EditMode-results
+          path: artifacts
+          if-no-files-found: ignore

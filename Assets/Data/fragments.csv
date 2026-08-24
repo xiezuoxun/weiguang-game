@@ -1,0 +1,14 @@
+fragment_id,item_id,home_slot_id,slot_index,anchor_x,anchor_y
+fr_001,it_watch,slot0,0,0.50,0.50
+fr_002,it_photo,slot0,0,0.33,0.45
+fr_003,it_photo,slot1,1,0.67,0.55
+fr_004,it_letter,slot0,0,0.33,0.40
+fr_005,it_letter,slot1,1,0.67,0.60
+fr_006,it_ornament,slot0,0,0.20,0.50
+fr_007,it_ornament,slot1,1,0.40,0.42
+fr_008,it_ornament,slot2,2,0.60,0.58
+fr_009,it_ornament,slot3,3,0.80,0.46
+fr_010,it_mirror,slot0,0,0.20,0.45
+fr_011,it_mirror,slot1,1,0.40,0.55
+fr_012,it_mirror,slot2,2,0.60,0.48
+fr_013,it_mirror,slot3,3,0.80,0.52

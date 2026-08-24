@@ -1,0 +1,50 @@
+# =============================================================================
+# 《微光归处》Unity 仓库忽略规则
+# 目的：排除 Unity 编辑器生成的本地缓存/中间产物，避免误提交数 GB 的 Library。
+# 注意：本项目用 CI（game-ci/unity-test-runner）在容器内跑 Unity，
+#       容器内 Library 走 actions/cache 单独缓存，本地 Library 不入库。
+# =============================================================================
+
+# --- Unity 生成目录 ---
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]serSettings/
+[Mm]emoryCaptures/
+[Pp]ackageManager/
+
+# --- Unity 锁定文件（多人协作时本地持有）---
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# --- 操作系统 / 编辑器 ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+
+# --- CI 产物（本地跑 run-ci.sh 可能生成的临时件）---
+artifacts/

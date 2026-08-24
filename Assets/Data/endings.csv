@@ -1,0 +1,12 @@
+ending_id,commission_id,ending_tag,title,description,emotion_arc_stage
+en_001,com_001,Truth,停摆的温柔,她把表收进木盒，像把时光轻轻放下,释然
+en_002,com_001,Omit,未说的告别,表仍停着，她也没再提起那天,怅惘
+en_003,com_002,Truth,墙上的笑,相框挂回原处，屋里又有人声,释然
+en_004,com_002,Reframe,留在抽屉,照片先收着，等一个晴天再挂,Reframe
+en_005,com_002,Omit,随它旧着,相框仍蒙尘，他也不再急着动,怅惘
+en_006,com_003,Truth,读给风听,未寄出的话终于落地，他轻了些,释然
+en_007,com_003,Omit,夹回书里,信仍沉默，他却不再躲它,怅惘
+en_008,com_004,Truth,断簪入怀,她把断簪贴身收着，像还在挽发,释然
+en_009,com_004,Omit,断口之间,簪就断着，她也不再补,怅惘
+en_010,com_005,Truth,看清自己,镜面清了，她与自己静静对望,释然
+en_011,com_005,Omit,留一点雾,镜子半清，她仍留着那层薄灰,怅惘

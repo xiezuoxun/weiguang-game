@@ -1,0 +1,6 @@
+﻿commission_id,client_id,item_id,chapter_index,session_soft_budget_min,is_daily,reveal_threshold,fragment_count,choice_count,ending_variants,is_mainplot
+com_001,cl_shen,it_watch,1,7,false,0.85,1,2,2,false
+com_002,cl_lin,it_photo,2,8,false,0.85,2,3,2,false
+com_003,cl_ah_ming,it_letter,3,9,false,0.85,2,2,2,true
+com_004,cl_shen,it_ornament,4,6,false,0.85,4,2,2,false
+com_005,cl_su,it_mirror,5,10,false,0.85,4,2,2,false

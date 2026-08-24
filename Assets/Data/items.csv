@@ -1,0 +1,6 @@
+﻿item_id,display_name,item_type,material,client_id,grid_w,grid_h,is_mainplot,fragment_count
+it_watch,停摆的怀表,Clock,Glass,cl_shen,8,8,false,1
+it_photo,褪色的全家福,Paper,Paper,cl_lin,10,10,false,2
+it_letter,未寄出的信,Letter,Paper,cl_ah_ming,10,12,true,2
+it_ornament,断裂的银簪,Ornament,Wood,cl_shen,8,8,false,4
+it_mirror,蒙尘的梳妆镜,Other,Glass,cl_su,12,10,false,4
