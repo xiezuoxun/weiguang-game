@@ -1,14 +1,14 @@
 # 《微光归处》CI 工作流
-# 触发：push / PR 到 main 或 phase5* 分支时，跑层 0（契约门 + 自测 + 命名守护）+ 层 1（Unity EditMode）。
+# 触发：push / PR 到 main、master 或 phase5* 分支时，跑层 0（契约门 + 自测 + 命名守护）+ 层 1（Unity EditMode）。
 # 层 1（Unity EditMode / G4/G5/G7）已启用，依赖仓库 Secrets 中的 UNITY_LICENSE（个人版免费 license .ulf 内容）。
 # 未配置该 secret 时 unity-tests job 会失败——属预期，需在 GitHub 仓库 Settings → Secrets → Actions 配置。
 name: CI
 
 on:
   push:
-    branches: [main, "phase5*"]
+    branches: [main, master, "phase5*"]
   pull_request:
-    branches: [main]
+    branches: [main, master]
 
 jobs:
   contract-gate:
