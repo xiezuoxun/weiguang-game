@@ -74,7 +74,7 @@ namespace Weiguang.Runtime
             var grid = item.dust_grid;
 
             // 确定性模拟驱动：按网格扫描顺序逐格 reveal（真实手势输入在 Unity 层后续接）。
-            // 每拂一格推进 reveal_pct，并驱动阈值回调发浮纸签。
+            // 每拂一格推进 reveal_pct，并驱动阈值回调发浮纸签；同时发体验层"阈值跨越"事件供顿挫脉冲。
             int total = grid.TotalCells();
             for (int y = 0; y < grid.height; y++)
             {
@@ -82,7 +82,8 @@ namespace Weiguang.Runtime
                 {
                     grid.RevealCell(x, y);
                     float pct = grid.RevealPct();
-                    tracker.Update(pct, t => PublishWhisper(t, pct));
+                    tracker.Update(pct, t => PublishWhisper(t, pct),
+                        crossed => _bus.Publish(GameEvents.EVT_REVEAL_THRESHOLD_CROSSED, crossed));
                 }
             }
 
@@ -208,7 +209,22 @@ namespace Weiguang.Runtime
             node.selected_option_id = opt.option_id;   // 玩家所选（非 stub 的"写第一个"）
             _lastTag = opt.ending_tag;                  // 单层 R3 语义：一个选项对应一个 ending_tag
             Debug.Log($"[S3] 抉择落定 selected={node.selected_option_id} tag={_lastTag}（单层，R3）");
+            // 体验层钩子：发"选中"事件（供纸签选中高亮 Shader 触发点），与 EVT_CHOICE_MADE（tag 语义）分离。
+            _bus.Publish(GameEvents.EVT_OPTION_SELECTED, new ChoiceOptionEvent(opt.option_id, ChoiceOptionEvent.TYPE_SELECTED));
             _bus.Publish(GameEvents.EVT_CHOICE_MADE, _lastTag); // 经 EventBus → OnChoiceMade → Delivering
+        }
+
+        /// <summary>S3 体验层钩子：玩家手指悬停/聚焦某选项时由上层（Unity 层触控）调用，
+        /// 经 EventBus 广播 EVT_OPTION_HIGHLIGHTED（供纸签高亮 Shader 触发点）。
+        /// 仅做事件广播，不改动 selected_option_id / _lastTag（选中落定仍走 SelectOption）。
+        /// 非法 optionId 不抛异常——悬停是瞬态反馈，静默忽略比 fail-fast 更友好。</summary>
+        public void HighlightOption(Commission c, string optionId)
+        {
+            var s = _snap();
+            var node = s.choice_states.Find(n => n.commission_id == c.commission_id);
+            if (node == null) return;
+            if (node.options.Find(o => o.option_id == optionId) == null) return; // 悬停瞬态：非法 id 静默忽略
+            _bus.Publish(GameEvents.EVT_OPTION_HIGHLIGHTED, new ChoiceOptionEvent(optionId, ChoiceOptionEvent.TYPE_HIGHLIGHTED));
         }
 
         EndingTag _lastTag = EndingTag.Omit;
@@ -306,6 +322,8 @@ namespace Weiguang.Runtime
             _save.Save(s, force: true); // ARCHIVED 强制写（会话收口）
             // S5-2 经 EventBus 广播归档事件（ADR-005：图鉴表现经事件通信）。
             _bus.Publish(GameEvents.EVT_ARCHIVED, new ArchivedEvent(entry.entry_id, entry.timeline_order, entry.is_mainplot));
+            // 体验层钩子：发"图鉴解锁"独立事件（供解锁动画触发点），与归档收束表现解耦。
+            _bus.Publish(GameEvents.EVT_CODEX_UNLOCKED, new CodexUnlockedEvent(entry.entry_id));
             Debug.Log($"[S5] 归档 CodexEntry={entry.entry_id}｜图鉴共 {s.codex.Count} 条");
         }
     }

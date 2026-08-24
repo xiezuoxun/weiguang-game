@@ -15,12 +15,24 @@ namespace Weiguang.Core
         public const string EVT_REVEAL_COMPLETE = "EVT_REVEAL_COMPLETE";
         // S1 浮纸签：越 0.25/0.50/0.75 阈值时各发一次（once-lock），不依赖文案内容
         public const string EVT_REVEAL_WHISPER = "EVT_REVEAL_WHISPER";
+        // S1 体验层钩子：跨越 0.25/0.50/0.75 任一段阈值时发出（与 whisper 同源但语义独立），
+        // 供美术接"顿挫感"脉冲（Shader 脉冲/震感）的精确触发点；payload 带跨过的 level 与当前 progress。
+        public const string EVT_REVEAL_THRESHOLD_CROSSED = "EVT_REVEAL_THRESHOLD_CROSSED";
         // S2 → S4
         public const string EVT_ASSEMBLE_COMPLETE = "EVT_ASSEMBLE_COMPLETE";
         // S3 → S4
         public const string EVT_CHOICE_MADE = "EVT_CHOICE_MADE";
+        // S3 体验层钩子：抉择点中某选项被"悬停高亮"时发出，供美术接纸签高亮 Shader 的触发点；
+        // 与 EVT_CHOICE_MADE 区分——高亮是预选中态（手指悬停/聚焦），选中是落定态。
+        public const string EVT_OPTION_HIGHLIGHTED = "EVT_OPTION_HIGHLIGHTED";
+        // S3 体验层钩子：抉择点中某选项被"正式选中"时发出（与 EVT_CHOICE_MADE 同源，tag 语义不同），
+        // 供美术接纸签选中高亮 Shader 的触发点；payload 带 option_id，不含文案内容。
+        public const string EVT_OPTION_SELECTED = "EVT_OPTION_SELECTED";
         // S5 归档（图鉴收口）→ 广播给 UI/上层做图鉴表现，不含文案内容（设计侧后续填）
         public const string EVT_ARCHIVED = "EVT_ARCHIVED";
+        // S5 体验层钩子：图鉴条目"解锁"独立事件（与 EVT_ARCHIVED 同源但语义独立），
+        // 供图鉴解锁动画有独立触发点（解锁脉冲/翻开动画），不依赖归档收束的其他表现。payload 带 entry_id。
+        public const string EVT_CODEX_UNLOCKED = "EVT_CODEX_UNLOCKED";
         // S6
         public const string EVT_SAVE_WRITTEN = "EVT_SAVE_WRITTEN";
         public const string EVT_SAVE_FAILED = "EVT_SAVE_FAILED";
@@ -102,6 +114,51 @@ namespace Weiguang.Core
             this.entry_id = entry_id;
             this.timeline_order = timeline_order;
             this.is_mainplot = is_mainplot;
+        }
+    }
+
+    /// <summary>S1 体验层钩子载荷：拂尘跨越 0.25/0.50/0.75 任一段阈值时由 RevealThresholdTracker 经 EventBus 广播。
+    /// level 为跨过的阈值档位（RevealThresholdTracker.T25/T50/T75 之一），progress 为跨越瞬间的当前 reveal 进度。
+    /// 该事件与 EVT_REVEAL_WHISPER 同源但语义独立——whisper 偏文案、本事件偏手感脉冲，美术可只接本事件做顿挫感。</summary>
+    public class RevealThresholdCrossedEvent
+    {
+        public readonly float level;     // 跨过的阈值档位（0.25/0.50/0.75）
+        public readonly float progress;  // 跨越瞬间的当前 reveal 进度（钳制后）
+
+        public RevealThresholdCrossedEvent(float level, float progress)
+        {
+            this.level = level;
+            this.progress = progress;
+        }
+    }
+
+    /// <summary>S3 体验层钩子载荷：抉择点中选项被"悬停高亮"/"正式选中"时由 SessionRunner 经 EventBus 广播。
+    /// option_id 为被高亮/选中的选项 id；type 标识 HIGHHLIGHTED/SELECTED 两态，便于同一订阅者分流。
+    /// 不含文案内容（design-strategist 后续供应纸签文案），工程侧只提供字段容器 + 触发钩子。</summary>
+    public class ChoiceOptionEvent
+    {
+        public const string TYPE_HIGHLIGHTED = "highlighted";
+        public const string TYPE_SELECTED = "selected";
+
+        public readonly string option_id; // 被高亮/选中的选项 id
+        public readonly string type;       // highlighted / selected
+
+        public ChoiceOptionEvent(string option_id, string type)
+        {
+            this.option_id = option_id;
+            this.type = type;
+        }
+    }
+
+    /// <summary>S5 体验层钩子载荷：图鉴条目解锁时由 SessionRunner 经 EventBus 广播（与 EVT_ARCHIVED 同源但语义独立）。
+    /// entry_id 为图鉴条目 id（cx_&lt;commission_id&gt;），供图鉴解锁动画定位条目；不含文案内容（设计侧后续填）。</summary>
+    public class CodexUnlockedEvent
+    {
+        public readonly string entry_id; // 图鉴条目 id（cx_&lt;commission_id&gt;）
+
+        public CodexUnlockedEvent(string entry_id)
+        {
+            this.entry_id = entry_id;
         }
     }
 }
