@@ -107,13 +107,19 @@ elif [ -n "${UNITY_PATH:-}" ] && [ -x "$UNITY_PATH" ]; then
   UNITY_BIN="$UNITY_PATH"
 else
   # 自动探测常见安装路径（本机装机后零配置即可跑）
+  # 覆盖：用户级 Hub（--scope user 非管理员安装的默认位置）、机器级 Hub、裸装、macOS、Linux
+  # 注意 Windows 用户级路径在 $LOCALAPPDATA/Unity/Hub/Editor（即 ~/AppData/Local/...）
+  LOCAL_U="$LOCALAPPDATA/Unity/Hub/Editor/2022.3.20f1/Editor/Unity.exe"
   CANDIDATES="$HOME/Unity/Hub/Editor/2022.3.20f1/Editor/Unity \
+              \"$LOCAL_U\" \
               /opt/unity/Editor/Unity \
               /Applications/Unity/Hub/Editor/2022.3.20f1/Unity.app/Contents/MacOS/Unity \
               /c/Program\ Files/Unity/Hub/Editor/2022.3.20f1/Editor/Unity.exe \
               /c/Program\ Files/Unity/Editor/Unity.exe"
   for c in $CANDIDATES; do
-    if [ -x "$c" ]; then UNITY_BIN="$c"; break; fi
+    # 去掉可能的外层引号后再测存在性（Windows 用户级路径含空格）
+    c_clean="$(echo "$c" | sed 's/^"//;s/"$//')"
+    if [ -x "$c_clean" ] || [ -f "$c_clean" ]; then UNITY_BIN="$c_clean"; break; fi
   done
 fi
 
