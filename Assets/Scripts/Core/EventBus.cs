@@ -36,6 +36,9 @@ namespace Weiguang.Core
         // S6
         public const string EVT_SAVE_WRITTEN = "EVT_SAVE_WRITTEN";
         public const string EVT_SAVE_FAILED = "EVT_SAVE_FAILED";
+        // 首启动引导（打磨）：_snapshot 为空（首次进入）时由 GameBootstrap 广播，
+        // 供 UI 层弹首见引导；payload 带四动词引导文案（OnboardingHints）。
+        public const string EVT_FIRST_LAUNCH = "EVT_FIRST_LAUNCH";
         // 契约/状态机告警（护栏 §5：越界与非法迁移不静默）——C2 命名唯一：事件名只在此处声明，禁止散落字面量
         public const string EVT_CONTRACT_WARN = "EVT_CONTRACT_WARN";
     }
@@ -151,14 +154,34 @@ namespace Weiguang.Core
     }
 
     /// <summary>S5 体验层钩子载荷：图鉴条目解锁时由 SessionRunner 经 EventBus 广播（与 EVT_ARCHIVED 同源但语义独立）。
-    /// entry_id 为图鉴条目 id（cx_&lt;commission_id&gt;），供图鉴解锁动画定位条目；不含文案内容（设计侧后续填）。</summary>
-    public class CodexUnlockedEvent
-    {
-        public readonly string entry_id; // 图鉴条目 id（cx_&lt;commission_id&gt;）
-
-        public CodexUnlockedEvent(string entry_id)
+        /// entry_id 为图鉴条目 id（cx_&lt;commission_id&gt;），供图鉴解锁动画定位条目；不含文案内容（设计侧后续填）。</summary>
+        public class CodexUnlockedEvent
         {
-            this.entry_id = entry_id;
+            public readonly string entry_id; // 图鉴条目 id（cx_&lt;commission_id&gt;）
+
+            public CodexUnlockedEvent(string entry_id)
+            {
+                this.entry_id = entry_id;
+            }
+        }
+
+        /// <summary>首启动引导事件载荷（打磨）：首次进入（_snapshot 为空）时由 GameBootstrap 广播。
+        /// 携带四核心动词的引导文案（title/hint 二元组，来自 OnboardingHints），供 UI 层展示首见引导；
+        /// 不含任何 Unity 依赖，纯字符串容器。</summary>
+        public class FirstLaunchEvent
+        {
+            public readonly KeyValuePair<string, string> reveal;
+            public readonly KeyValuePair<string, string> assemble;
+            public readonly KeyValuePair<string, string> choose;
+            public readonly KeyValuePair<string, string> archive;
+
+            public FirstLaunchEvent(
+                KeyValuePair<string, string> reveal,
+                KeyValuePair<string, string> assemble,
+                KeyValuePair<string, string> choose,
+                KeyValuePair<string, string> archive)
+            {
+                this.reveal = reveal; this.assemble = assemble; this.choose = choose; this.archive = archive;
+            }
         }
     }
-}

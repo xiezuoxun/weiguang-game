@@ -25,6 +25,13 @@ namespace Weiguang.Runtime
         Dictionary<string, MemoryItem> _items;
         SaveSnapshot _snapshot;
 
+        /// <summary>打磨：运行时画质/降级配置，Awake 按设备档位初始化，供 SessionRunner / 美术 Shader 读取。</summary>
+        public RuntimeQuality quality = new RuntimeQuality();
+
+        /// <summary>打磨：存档失败的用户侧回调（Unity UI 可挂"进度未保存"提示）。
+        /// 与 EVT_SAVE_FAILED 日志并存——日志供工程排查，此回调供玩家可见反馈。</summary>
+        public System.Action<string> OnSaveFailed;
+
         void Awake()
         {
             _bus = new EventBus { LogError = m => Debug.LogError(m) };
@@ -38,14 +45,32 @@ namespace Weiguang.Runtime
             _save.RegisterMigration(0, s => { s.version = 1; return s; });
             _fsm = new CommissionStateMachine(_bus);
             _fsm.OnWarn += m => Debug.LogWarning($"[S4] {m}");
-            _bus.Subscribe(GameEvents.EVT_SAVE_FAILED, p => Debug.LogWarning($"[S6] 存档失败：{p}"));
+            _bus.Subscribe(GameEvents.EVT_SAVE_FAILED, p =>
+            {
+                var msg = p as string ?? "未知存档错误";
+                Debug.LogWarning($"[S6] 存档失败：{msg}");
+                OnSaveFailed?.Invoke(msg); // 打磨：玩家可见反馈钩子
+            });
+
+            // 打磨：按设备档位初始化降级配置（移动端/低内存机自动降级）
+            quality = RuntimeQuality.ForDevice(Application.isMobilePlatform, SystemInfo.systemMemorySize);
 
             LoadData();
-            _snapshot = _save.LoadLatest() ?? NewSnapshot();
-            if (_snapshot.active_commission != null)
+            _snapshot = _save.LoadLatest();
+            bool firstLaunch = _snapshot == null;
+            if (firstLaunch)
+            {
+                _snapshot = NewSnapshot();
+                // 打磨：首启动广播引导事件（供 UI 弹首见引导），携带四动词引导文案
+                _bus.Publish(GameEvents.EVT_FIRST_LAUNCH, new FirstLaunchEvent(
+                    OnboardingHints.Of("reveal"), OnboardingHints.Of("assemble"),
+                    OnboardingHints.Of("choose"), OnboardingHints.Of("archive")));
+                Debug.Log("[S6] 首次启动：广播 EVT_FIRST_LAUNCH");
+            }
+            else if (_snapshot.active_commission != null)
                 Debug.Log($"[S6] 恢复存档：{_snapshot.active_commission.commission_id} @ {_snapshot.active_commission.phase}（node={_snapshot.last_node}）");
 
-            _runner = new SessionRunner(_bus, _fsm, _save, () => _snapshot);
+            _runner = new SessionRunner(_bus, _fsm, _save, () => _snapshot, quality);
             _runner.WireStubs();
             if (_snapshot.active_commission == null || _snapshot.active_commission.phase == CommissionPhase.Archived)
                 StartNextCommission();

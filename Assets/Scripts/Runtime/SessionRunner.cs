@@ -13,11 +13,17 @@ namespace Weiguang.Runtime
         readonly CommissionStateMachine _fsm;
         readonly SaveEngine _save;
         readonly Func<SaveSnapshot> _snap;
+        readonly RuntimeQuality _quality;
 
-        public SessionRunner(EventBus bus, CommissionStateMachine fsm, SaveEngine save, Func<SaveSnapshot> snap)
+        public SessionRunner(EventBus bus, CommissionStateMachine fsm, SaveEngine save, Func<SaveSnapshot> snap, RuntimeQuality quality = null)
         {
             _bus = bus; _fsm = fsm; _save = save; _snap = snap;
+            _quality = quality ?? new RuntimeQuality(); // 打磨：降级配置（默认全开）
         }
+
+        /// <summary>打磨：当前降级档位下的拂尘网格采样上限（供美术 Shader / 后续真机手势层读取）。
+        /// 逻辑层仍按 CSV 全格揭示（保证 reveal_pct 到达阈值），此值仅约束表现层分辨率。</summary>
+        public int EffectiveDustCellCap => Math.Min(_quality.maxDustCells, 64);
 
         public void WireStubs()
         {
