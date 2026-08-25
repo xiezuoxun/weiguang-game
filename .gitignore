@@ -48,3 +48,7 @@ Desktop.ini
 
 # --- CI 产物（本地跑 run-ci.sh 可能生成的临时件）---
 artifacts/
+
+# Python 缓存
+__pycache__/
+*.pyc
