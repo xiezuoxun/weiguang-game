@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Weiguang.Core;
+using Weiguang.Runtime.ArtBinding;
 
 namespace Weiguang.Runtime
 {
@@ -74,6 +75,17 @@ namespace Weiguang.Runtime
             _runner.WireStubs();
             if (_snapshot.active_commission == null || _snapshot.active_commission.phase == CommissionPhase.Archived)
                 StartNextCommission();
+
+            BindArtBridges();
+        }
+
+        /// <summary>6-B 骨架：将场景内所有 ArtBridgeBase 绑定到本实例的 EventBus（art-director 接口约定）。
+        /// 桥为 MonoBehaviour，挂在特定 GameObject 上；此处统一注入，避免静态单例（ADR-005）。</summary>
+        void BindArtBridges()
+        {
+            var bridges = FindObjectsOfType<ArtBridgeBase>();
+            foreach (var b in bridges) b.Bind(_bus);
+            if (bridges.Length > 0) Debug.Log($"[6-B] 已绑定 {bridges.Length} 个 ArtBridge");
         }
 
         string Path0() => System.IO.Path.Combine(Application.persistentDataPath, "saves");

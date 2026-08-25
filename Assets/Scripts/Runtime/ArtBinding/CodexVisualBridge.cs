@@ -26,7 +26,11 @@ namespace Weiguang.Runtime.ArtBinding
             Bus.Subscribe(GameEvents.EVT_CODEX_UNLOCKED, OnUnlocked);
         }
 
-        protected override void OnUnbind() { }
+        protected override void OnUnbind()
+        {
+            Bus.Unsubscribe(GameEvents.EVT_ARCHIVED, OnArchived);
+            Bus.Unsubscribe(GameEvents.EVT_CODEX_UNLOCKED, OnUnlocked);
+        }
 
         void OnArchived(object payload)
         {

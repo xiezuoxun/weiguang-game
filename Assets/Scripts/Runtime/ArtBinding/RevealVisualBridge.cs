@@ -31,9 +31,8 @@ namespace Weiguang.Runtime.ArtBinding
 
         protected override void OnUnbind()
         {
-            // Core EventBus 当前仅 Subscribe/Clear；无 Unsubscribe。
-            // 退订通过 Bus.Clear() 全局清理（GameBootstrap 切会话时调用），或 6-B 为 EventBus 增 Unsubscribe。
-            // 此处不主动 Clear（会清掉其他订阅者）；交由宿主管理。详见 phase6-scene-assembly.md §接口约定。
+            Bus.Unsubscribe(GameEvents.EVT_REVEAL_WHISPER, OnWhisper);
+            Bus.Unsubscribe(GameEvents.EVT_REVEAL_THRESHOLD_CROSSED, OnCrossed);
         }
 
         void OnWhisper(object payload)

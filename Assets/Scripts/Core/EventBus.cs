@@ -65,6 +65,14 @@ namespace Weiguang.Core
             foreach (var h in snapshot) { try { h(payload); } catch (Exception e) { LogError($"[EventBus] {evt} handler 异常: {e.Message}"); } }
         }
 
+        /// <summary>精准退订某个事件的单个处理器（避免 Clear 误清其他订阅者）。</summary>
+        public void Unsubscribe(string evt, Handler h)
+        {
+            if (!_subs.TryGetValue(evt, out var list)) return;
+            list.Remove(h);
+            if (list.Count == 0) _subs.Remove(evt);
+        }
+
         public void Clear() => _subs.Clear();
     }
 

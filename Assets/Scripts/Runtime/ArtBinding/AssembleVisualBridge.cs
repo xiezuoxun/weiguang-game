@@ -25,7 +25,10 @@ namespace Weiguang.Runtime.ArtBinding
             _boardMat = r != null ? r.material : null;
         }
 
-        protected override void OnUnbind() { }
+        protected override void OnUnbind()
+        {
+            Bus.Unsubscribe(GameEvents.EVT_ASSEMBLE_COMPLETE, OnAssembleComplete);
+        }
 
         void OnAssembleComplete(object payload)
         {

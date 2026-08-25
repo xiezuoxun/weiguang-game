@@ -32,7 +32,12 @@ namespace Weiguang.Runtime.ArtBinding
             Bus.Subscribe(GameEvents.EVT_CHOICE_MADE, OnChoiceMade);
         }
 
-        protected override void OnUnbind() { }
+        protected override void OnUnbind()
+        {
+            Bus.Unsubscribe(GameEvents.EVT_OPTION_SELECTED, OnSelected);
+            Bus.Unsubscribe(GameEvents.EVT_OPTION_HIGHLIGHTED, OnHighlighted);
+            Bus.Unsubscribe(GameEvents.EVT_CHOICE_MADE, OnChoiceMade);
+        }
 
         void OnSelected(object payload)
         {
