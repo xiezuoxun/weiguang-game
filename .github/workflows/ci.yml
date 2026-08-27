@@ -24,16 +24,16 @@ jobs:
           python-version: "3.11"
 
       - name: G1 契约门
-        run: python game/tools/validate_contract.py game/Assets/Data
+        run: python tools/validate_contract.py Assets/Data
 
       - name: G2 契约校验器自测
-        run: python game/tools/test_validate_contract.py
+        run: python tools/test_validate_contract.py
 
       - name: G3 命名与阈值守护
-        run: python game/tools/check_naming.py game/Assets/Scripts
+        run: python tools/check_naming.py Assets/Scripts
 
       - name: G3 测试布局守护
-        run: python game/tools/check_test_layout.py
+        run: python tools/check_test_layout.py
 
       - name: Upload artifacts (如有 Unity 产物)
         if: always()
@@ -49,12 +49,12 @@ jobs:
   # 前置（需在 GitHub 仓库侧完成，本机无法代劳）：
   #   1. 仓库 Secrets（Settings → Secrets → Actions）配置 `UNITY_LICENSE`：
   #        个人版免费 license 的 .ulf 内容（整段 XML 文本）。
-  #        macOS/Linux:  ~/.local/share/unity3d/Unity/Unity_lic.ulf
-  #        Windows:      %APPDATA%\Unity\Unity_lic.ulf
-  #   2. 未配置该 secret 时本 job 会失败（属预期）——属 license 缺失而非代码问题。
+  #        Windows:  C:\ProgramData\Unity\Unity_lic.ulf
+  #        Mac:      /Library/Application Support/Unity/Unity_lic.ulf
+  #        Linux:    ~/.local/share/unity3d/Unity/Unity_lic.ulf
+  #   2. 未配置该 secret 时本 job 会失败——属 license 缺失而非代码问题。
   #   说明：个人版免费激活无需 serial；game-ci/unity-test-runner 会自动用
-  #        UNITY_LICENSE 激活容器内环境。若改用组织版 serial，则把
-  #        unityLicense 改为 unitySerial 并配 UNITY_SERIAL/UNITY_EMAIL/UNITY_PASSWORD。
+  #        UNITY_LICENSE 激活容器内环境。
   # =============================================================================
   unity-tests:
     name: 层1 Unity EditMode 测试 (G4/G5/G7)
@@ -66,8 +66,8 @@ jobs:
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
-          path: game/Library
-          key: Library-${{ hashFiles('game/Assets/**', 'game/ProjectSettings/**') }}
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'ProjectSettings/**') }}
           restore-keys: Library-
 
       - name: Check UNITY_LICENSE secret
@@ -79,6 +79,7 @@ jobs:
             exit 1
           else
             echo "UNITY_LICENSE is set (length: ${#UNITY_LICENSE})"
+            echo "First 50 chars: ${UNITY_LICENSE:0:50}"
           fi
 
       - name: Run EditMode Tests
@@ -86,9 +87,9 @@ jobs:
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          projectPath: game
+          projectPath: .
           unityVersion: 2022.3.20f1
-          testPlatform: editmode
+          testMode: editmode
           artifactsPath: artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
 
