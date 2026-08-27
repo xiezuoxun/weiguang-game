@@ -23,8 +23,17 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Run CI (层0；Unity 步自动 SKIP)
-        run: bash game/ci/run-ci.sh
+      - name: G1 契约门
+        run: python game/tools/validate_contract.py game/Assets/Data
+
+      - name: G2 契约校验器自测
+        run: python game/tools/test_validate_contract.py
+
+      - name: G3 命名与阈值守护
+        run: python game/tools/check_naming.py game/Assets/Scripts
+
+      - name: G3 测试布局守护
+        run: python game/tools/check_test_layout.py
 
       - name: Upload artifacts (如有 Unity 产物)
         if: always()
@@ -61,6 +70,17 @@ jobs:
           key: Library-${{ hashFiles('game/Assets/**', 'game/ProjectSettings/**') }}
           restore-keys: Library-
 
+      - name: Check UNITY_LICENSE secret
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        run: |
+          if [ -z "$UNITY_LICENSE" ]; then
+            echo "ERROR: UNITY_LICENSE secret is empty or not set"
+            exit 1
+          else
+            echo "UNITY_LICENSE is set (length: ${#UNITY_LICENSE})"
+          fi
+
       - name: Run EditMode Tests
         uses: game-ci/unity-test-runner@v4
         env:
@@ -69,7 +89,6 @@ jobs:
           projectPath: game
           unityVersion: 2022.3.20f1
           testPlatform: editmode
-          testCategory: EditMode
           artifactsPath: artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
 
