@@ -4,6 +4,7 @@
 using System;
 using NUnit.Framework;
 using Weiguang.Core;
+using Weiguang.Runtime;
 using Weiguang.Tests;
 
 namespace Weiguang.Tests
@@ -25,6 +26,7 @@ namespace Weiguang.Tests
                 var fsm = new CommissionStateMachine(Bus);
                 var save = new SaveEngine(new FakeStorage(), Build.DIR, Bus);
                 Runner = new SessionRunner(Bus, fsm, save, () => Snap);
+                Runner.WireStubs();
                 Rec = new EventRecorder(Bus, GameEvents.EVT_ARCHIVED);
             }
 
@@ -126,6 +128,7 @@ namespace Weiguang.Tests
         {
             var h = new Harness();
             var c = Harness.Choosing("com_e");
+            h.Snap.active_commission = c;
             AttachChoice(h, c, tag);
 
             h.Runner.SelectOption(c, "op0"); // → EVT_CHOICE_MADE → OnChoiceMade → Deliver(tag)

@@ -53,7 +53,7 @@ def write_fixture(data, extra=None):
 
 
 def run_validator(data_dir):
-    p = subprocess.run([sys.executable, VALIDATOR, data_dir], capture_output=True, text=True)
+    p = subprocess.run([sys.executable, VALIDATOR, data_dir], capture_output=True, text=True, encoding="utf-8")
     return p.returncode, (p.stdout or "") + (p.stderr or "")
 
 

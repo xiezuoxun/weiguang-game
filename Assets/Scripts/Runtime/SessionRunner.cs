@@ -173,7 +173,7 @@ namespace Weiguang.Runtime
         // S3-2 点选落定：SelectOption 写玩家所选的 selected_option_id 与 _lastTag；
         //   非法 optionId 抛 ContractViolationException（fail-fast）。
         //   注：StartChoose 内仍按设计默认走"选第一个"，但路径走真实 SelectOption 而非直接赋值。
-        void StartChoose(Commission c)
+        public void StartChoose(Commission c)
         {
             var s = _snap();
             var node = s.choice_states.Find(n => n.commission_id == c.commission_id);
@@ -299,6 +299,10 @@ namespace Weiguang.Runtime
                 {
                     $"非法归档：commission_id={c.commission_id} phase={c.phase}，期望 Delivering/Archived（其余 phase 视为乱序）"
                 });
+
+            // 若仍处 Delivering（直接调用 Archive 而非经 Step 收口），先经状态机迁移到 Archived。
+            if (c.phase == CommissionPhase.Delivering)
+                _fsm.AdvancePhase(c, CommissionPhase.Archived);
 
             // S5-2 聚合 CodexEntry：client/item/commission 来自 c，ending_tag 来自 _lastTag，
             // 客户详情经 SaveSnapshot.clients 按 client_id 查（无则留默认，不依赖客户端表注入）。

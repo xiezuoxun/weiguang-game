@@ -124,7 +124,7 @@ namespace Weiguang.Runtime
                 {
                     item_id = r["item_id"], display_name = r["display_name"],
                     item_type = (ItemType)Enum.Parse(typeof(ItemType), r["item_type"], true),
-                    material = (Material)Enum.Parse(typeof(Material), r["material"], true),
+                    material = (Weiguang.Core.Material)Enum.Parse(typeof(Weiguang.Core.Material), r["material"], true),
                     client_id = r["client_id"], dust_grid = grid, detail_unlocked = false,
                     is_mainplot = bool.Parse(r["is_mainplot"])
                 };

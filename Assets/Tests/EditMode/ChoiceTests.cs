@@ -5,6 +5,7 @@
 using System;
 using NUnit.Framework;
 using Weiguang.Core;
+using Weiguang.Runtime;
 using Weiguang.Tests;
 
 namespace Weiguang.Tests

@@ -18,7 +18,7 @@ namespace Weiguang.Runtime.ArtBinding
         [Tooltip("脉冲时长(ms)，验收区间 120–200")]
         public float pulseDurationMs = 160f;
 
-        Material _mat;          // DustReveal 材质实例（TODO：编辑器挂或运行时实例化）
+        UnityEngine.Material _mat;          // DustReveal 材质实例（TODO：编辑器挂或运行时实例化）
         float _pulseStart = -1f;
 
         protected override void OnBind()

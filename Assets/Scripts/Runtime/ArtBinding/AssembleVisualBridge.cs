@@ -16,7 +16,7 @@ namespace Weiguang.Runtime.ArtBinding
         public float convergeFlashSec = 0.35f;
 
         float _flashStart = -1f;
-        Material _boardMat;
+        UnityEngine.Material _boardMat;
 
         protected override void OnBind()
         {
