@@ -51,11 +51,12 @@ Phase 5 验证的是"代码对不对"（逻辑闭环 + 内容闭环 + CI 守护�
 4. **层 2 集成测试补全**：`docs/TEST_STRATEGY.md` 标记为"待补"的 PlayMode/设备项（onPause 真机、快照 ≤200KB、URP 帧率、手势→语义）
 5. **验收门**：真机（Android/iOS 或桌面）跑通一条主线 + 一次中断恢复，无卡死/无数据丢失
 
-### Phase 6-C · 打磨与运营准备（可并行）
-1. **I1 增强**（按需）：R4/R5 交叉校验 + BOM 入 CI（目前 `validate_contract.py` 已跑，缺交叉校验）
-2. **首启引导**（已钩子就绪）：`EVT_FIRST_LAUNCH` + `OnboardingHints` 接真实引导 UI
-3. **低端机降级验证**：`RuntimeQuality` 三开关（enableGlowShader / maxDustCells / enablePaperShader）在真机中低端设备实测
-4. **运营素材**：商店图 / 短视频 / 测试招募（如需上线）
+### Phase 6-C · 打磨与运营准备（可并行）　✅ 沙箱可落地产物已全部交付（commit `d668c52` + `2eec5b9`）
+> 说明：6-C 沙箱可做的"逻辑/校验/手册/桥接"部分已完成；需真机/二进制/外部工具的"实体验收"由用户侧执行（见 `phase6-local-runbook.md` / `phase6-device-fallback.md` / `phase6-launch-assets.md`）。
+1. **I1 增强** ✅：`validate_contract.py` 加 **R4 碎片归属交叉校验**（fragments→items 引用 + 按 item 聚合碎片数 == `fragment_count`）+ **R5 结局抉择一致性**（ending_id 唯一 + commission 引用完整 + choices 经 commission_id+ending_tag 关联）+ **BOM 检测**（EF BB BF → warn 不阻断）。`run-ci.sh` G1 门已调用，CI 层0 真实守护。实跑 PASS。
+2. **首启引导** ✅（桥接层）：`OnboardingUIRuntimeBridge.cs` 继承 `ArtBridgeBase`，订阅 `EVT_FIRST_LAUNCH`，`ShowOnboarding` 为纯 C# stub（Debug.Log 四动词引导，未引 Unity UI，无 Canvas 不崩）；由 `GameBootstrap.BindArtBridges` 自动绑定。**真实引导 Canvas/面板待美术+用户本机接**。
+3. **低端机降级验证** ✅（逻辑+手册）：`RuntimeQualityFallbackTests.cs`（EditMode）固化 `ForDevice` 三档位降级数学；`SessionRunner.EffectiveDustCellCap` 已接 `Math.Min(_quality.maxDustCells,64)`。**真机帧率实测见 `phase6-device-fallback.md`，需用户本机/真机跑**。
+4. **运营素材** ✅（清单）：`phase6-launch-assets.md` 列商店图(1024×500/512 圆角/16:9)+30s 视频脚本(四动词四镜)+测试招募模板+字段对齐。二进制素材需美术/用户侧产。
 
 ---
 
@@ -70,18 +71,22 @@ Phase 5 验证的是"代码对不对"（逻辑闭环 + 内容闭环 + CI 守护�
 
 ---
 
-## 4. 当前即可执行的下一步（待用户拍板）
+## 4. 执行状态总览（截至 2026-08-27，收口裁定见 phase6-closure-decision.md）
 
-1. **派 art-director 据 `production/art-spec.md` 排期生产 B1/B2/B3 实体资产**（Phase 6-A 启动，唯一硬阻断项）
-2. **engineering-lead 先搭空场景骨架**（挂 GameBootstrap + CSV 槽 + EventBus→UI 转接层 stub），为 6-A 资产预留挂载点
-3. **用户本机先 `git pull` 验收打磨 commit**（`9b791b2` / `009826a` 的 18 例新测试），确保基线绿后再动美术
+| 子阶段 | 沙箱可落地产物 | 用户侧待执行 | 状态 |
+|---|---|---|---|
+| 6-A 美术资产 | B1 `DustReveal.shader` + ArtBinding 转接层×6 + 生产清单 + 场景装配说明（`b506c03`） | B1/B2/B3 二进制 PNG + 音频 8 文件（`phase6-asset-tasks.md`） | ⚠️ 实体空缺，硬阻断 |
+| 6-B 场景骨架 | EventBus.Unsubscribe + 4 桥 OnUnbind + GameBootstrap.BindArtBridges（`3702b06`） | 真机挂场景 + 手势层 + onPause 真机验 + 层2 测试补全 | 🟡 骨架就绪，待串联 |
+| 6-C 打磨运营 | I1 增强 + 首启引导桥 + 降级验证 + 运营清单（`d668c52`+`2eec5b9`） | 真机帧率实测 + 引导 Canvas + 运营素材二进制 | ✅ 沙箱产物齐 |
 
-> ⚠️ **沙箱网络限制**：本 `game/` 已连 `origin/master` 但**未 push**（沙箱无 GitHub 出网权限）。用户本机需 `git pull` 才能拿到打磨阶段 3 个新 commit（35a8695 / 9b791b2 / 009826a）。
+**全部 9 个未推送 Phase 6 commit 已打包 `weiguang-6ab.bundle`（60K，动态基线 origin/master..master，含 35a8695 起）**，用户本机 `git pull weiguang-6ab.bundle master` 即同步。
+
+> ⚠️ **沙箱网络限制**：本 `game/` 已连 `origin/master` 但**未 push**（沙箱无 GitHub 出网权限）。所有新 commit 经 bundle 离线交付。
 
 ---
 
 ## 5. 已知残留（从 Phase 5 继承，非阻塞）
 
 - `check_test_layout.py` 路径根误判（cwd 扫 `Assets/...` vs 实际 `game/Assets/...`），属已知非阻断项
-- CR-003 R1–R8 中 Ornament 枚举（R1 已闭环）、交叉校验入 CI（R4/R5，见 6-C①）、cl03 签名色、15 句低语文案（已交付 whispers.csv）、四张 CSV（已扩展为七张）
+- CR-003 R1–R8 中 Ornament 枚举（R1 已闭环）、**交叉校验入 CI（R4/R5）已闭环**（见 6-C① `d668c52`）、cl03 签名色、15 句低语文案（已交付 whispers.csv）、四张 CSV（已扩展为七张）
 - 首个 Unity 环境已跑 G4/G7 清编译期问题（本机全绿已证明路径 C 各 EPIC 无编译期问题）
