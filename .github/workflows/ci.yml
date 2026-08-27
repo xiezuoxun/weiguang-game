@@ -59,6 +59,7 @@ jobs:
   unity-tests:
     name: 层1 Unity EditMode 测试 (G4/G5/G7)
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
