@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 26
+  productGUID: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+  AndroidProfiler: 0
+  AndroidFilterTouchesWhenObscured: 0
+  AndroidEnableSustainedPerformanceMode: 0
+  defaultScreenOrientation: 4
+  targetDevice: 2
+  useOnDemandResources: 0
+  accelerometerFrequency: 60
+  companyName: WeiguangStudio
+  productName: "\u5FAE\u5149\u5F52\u5904"
+  defaultCursor: {fileID: 0}
+  cursorHotspot: {x: 0, y: 0}
+  m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
+  m_ShowUnitySplashScreen: 1
+  m_ShowUnitySplashLogo: 1
+  m_SplashScreenOverlayOpacity: 1
+  m_SplashScreenAnimation: 1
+  m_SplashScreenLogoStyle: 1
+  m_SplashScreenDrawMode: 0
+  m_SplashScreenBackgroundAnimationZoom: 1
+  m_SplashScreenLogoAnimationZoom: 1
+  m_VirtualRealitySplashScreen: {fileID: 0}
+  m_HolographicTrackingLossScreen: {fileID: 0}
+  m_SplashScreenBackgroundLandscape: {fileID: 0}
+  m_SplashScreenBackgroundPortrait: {fileID: 0}
+  m_SplashScreenBackgroundSquare: {fileID: 0}
+  m_AndroidSplashScreenSizing: 0
+  m_AndroidSplashScreenScaleMode: 0
+  m_AndroidSplashScreenBackground: {fileID: 0}
+  m_AndroidSplashScreenLogoSize: 0
+  m_AccelerometerFrequency: 60
+  m_CloudProjectId: 
+  m_StackTraceLogType: 0
+  iosSplashScreenName: {fileID: 0}
+  iosLaunchScreenType: 0
+  iosLaunchScreenBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
+  iosLaunchScreenFillMode: 0
+  iosLaunchScreenSize: 100
+  iosLaunchScreenCustomXibPath: 
+  iosLaunchScreenCustomStoryboardPath: 
+  iosLaunchScreenCustomStoryboardPath_ipad: 
+  iosLaunchScreenCustomXibPath_ipad: 
+  iosDeviceRequiresIPhoneOSNotarization: 0
+  iosLaunchScreenCustomStoryboardPath_iphone: 
+  iosAppRequiresExternalStorage: 0
+  m_APIUpdater: 1
+  m_ApplicationIdentifier: {}
+  m_BuildTargetIcons: []
+  m_BuildTargetPlatformIcons: []
+  m_BuildTargetBatching: []
+  m_BuildTargetGraphicsJobs: []
+  m_BuildTargetGraphicsJobMode: []
+  m_BuildTargetGraphicsAPIs: []
+  m_BuildTargetVRSettings: []
+  m_DefaultScreenWidth: 1920
+  m_DefaultScreenHeight: 1080
+  m_DefaultScreenWidthWeb: 960
+  m_DefaultScreenHeightWeb: 600
+  m_SpriteAtlasMaxTextureSize: 2048
+  m_SpriteAtlasMinWidth: 32
+  m_SpriteAtlasMinHeight: 32
+  m_BuildTarget: 1
+  m_StandaloneBuildSubtarget: 0
+  m_ServerHttpPort: 8080
