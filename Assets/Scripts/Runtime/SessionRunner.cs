@@ -25,6 +25,12 @@ namespace Weiguang.Runtime
         /// 逻辑层仍按 CSV 全格揭示（保证 reveal_pct 到达阈值），此值仅约束表现层分辨率。</summary>
         public int EffectiveDustCellCap => Math.Min(_quality.maxDustCells, 64);
 
+        /// <summary>打磨（Phase 7-C1）：把 CSV 拂尘网格 (csvW,csvH) 按当前降级档位封顶，
+        /// 返回**表现层**采样分辨率 (resW,resH)。总格 ≤ EffectiveDustCellCap，保长宽比。
+        /// 逻辑层 reveal 仍按 CSV 全格驱动（reveal_pct 阈值不受影响），此值仅供美术 Shader 降采样密度。</summary>
+        public (int resW, int resH) VisualDustResolution(int csvW, int csvH)
+            => DustBudget.CapGrid(EffectiveDustCellCap, csvW, csvH);
+
         public void WireStubs()
         {
             _bus.Subscribe(GameEvents.EVT_REVEAL_COMPLETE, p => OnRevealComplete());

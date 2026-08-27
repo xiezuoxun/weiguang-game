@@ -21,10 +21,18 @@ namespace Weiguang.Runtime.ArtBinding
         UnityEngine.Material _mat;          // DustReveal 材质实例（TODO：编辑器挂或运行时实例化）
         float _pulseStart = -1f;
 
+        /// <summary>打磨（Phase 7-C1）：当前降级档位下的拂尘表现层分辨率上限（来自 Quality.maxDustCells，封顶 64）。
+        /// 由 OnBind 按注入的 Quality 计算；供美术 Shader 经 _GridRes uniform 降采样密度。</summary>
+        public int GridCap { get; private set; } = 64;
+
         protected override void OnBind()
         {
             var r = GetComponent<Renderer>();
             _mat = r != null ? r.material : null;
+            // 降级接线：读 Quality.maxDustCells（未注入则默认 64 全开档）
+            GridCap = Quality != null ? Mathf.Min(Quality.maxDustCells, 64) : 64;
+            if (_mat != null) _mat.SetFloat("_GridRes", GridCap); // DustReveal.shader 需暴露 _GridRes（见 phase7-plan C1）
+            Debug.Log($"[ArtBinding/Reveal] 拂尘表现层分辨率上限={GridCap}（quality.maxDustCells={Quality?.maxDustCells}）");
             Bus.Subscribe(GameEvents.EVT_REVEAL_WHISPER, OnWhisper);
             Bus.Subscribe(GameEvents.EVT_REVEAL_THRESHOLD_CROSSED, OnCrossed);
         }

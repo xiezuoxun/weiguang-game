@@ -1,24 +1,25 @@
-// OnboardingUIRuntimeBridge.cs — 首启引导 UI 桥（打磨 Phase 6-C）
-// 作者：程基岩（engineering-lead）｜Phase 6-C
-// 职责：订阅 EVT_FIRST_LAUNCH，把四动词引导文案（reveal/assemble/choose/archive）转成步骤列表；
-//       当前为纯 C# stub（不引用任何 Unity UI 类型），仅 Debug.Log 每条引导，保证无 Canvas/资产时不崩核心循环。
-//       真实首启引导 Canvas/面板由 UI 层后续接（见 ShowOnboarding 的 TODO）。
-// 由 GameBootstrap.BindArtBridges 经 FindObjectsOfType<ArtBridgeBase>() 自动扫到并 Bind(_bus) —— 无需改 GameBootstrap。
-using System.Collections.Generic;
-using UnityEngine;
+// OnboardingUIRuntimeBridge.cs — 首启引导桥（打磨 Phase 7-C2）
+// 职责：订阅 EVT_FIRST_LAUNCH，交给纯 C# OnboardingFlow 编排四动词引导流转；
+//       本类只做事件→flow 的转发，并暴露 AdvanceStep()/SkipAll() 供本机 UI 按钮调用（ADR-005 解耦）。
+// 真实 Canvas 由本机 OnboardingCanvasView : MonoBehaviour, IOnboardingView 接（见 phase7-onboarding-canvas.md）。
+// 由 GameBootstrap.BindArtBridges 经 FindObjectsOfType<ArtBridgeBase>() 自动扫到并 Bind(_bus, quality)。
 using Weiguang.Core;
-using Weiguang.Runtime;
+using Weiguang.Runtime.Onboarding;
 
 namespace Weiguang.Runtime.ArtBinding
 {
     /// <summary>
     /// 挂载到场景内任意 GameObject（建议挂在 UIRoot）；Awake 后由 GameBootstrap 注入 EventBus。
-    /// 仅消费 EVT_FIRST_LAUNCH，不反向依赖任何玩法系统（ADR-005 解耦）。
+    /// 仅消费 EVT_FIRST_LAUNCH，不反向依赖任何玩法系统。
     /// </summary>
     public class OnboardingUIRuntimeBridge : ArtBridgeBase
     {
+        OnboardingFlow _flow;
+
         protected override void OnBind()
         {
+            // 默认视图/持久化（无 Canvas 时仅日志、不崩；本机可注入真实 Canvas 视图）。
+            _flow = new OnboardingFlow(new LogOnboardingView(), new PlayerPrefsOnboardingStore());
             Bus.Subscribe(GameEvents.EVT_FIRST_LAUNCH, OnFirstLaunch);
         }
 
@@ -29,23 +30,13 @@ namespace Weiguang.Runtime.ArtBinding
 
         void OnFirstLaunch(object payload)
         {
-            if (!(payload is FirstLaunchEvent ev)) return;
-            // 四动词引导（reveal/assemble/choose/archive）按 GDD 顺序拼成步骤列表
-            var steps = new List<KeyValuePair<string, string>>
-            {
-                ev.reveal, ev.assemble, ev.choose, ev.archive
-            };
-            ShowOnboarding(steps);
+            if (payload is FirstLaunchEvent ev) _flow.Start(ev);
         }
 
-        /// <summary>纯 C# stub：不引用任何 Unity UI 类型，保持 Runtime 层可被 EditMode 测试引用且不崩核心循环。
-        /// 当前仅记日志；真实面板接好后改为按 steps 顺序展示四动词引导。</summary>
-        void ShowOnboarding(List<KeyValuePair<string, string>> steps)
-        {
-            if (steps == null) return;
-            foreach (var kv in steps)
-                Debug.Log($"[Onboarding] 首启引导：{kv.Key} —— {kv.Value}");
-            // TODO(UI): 接真实首启引导 Canvas/面板，按 steps 顺序展示四动词引导
-        }
+        /// <summary>供本机 UI 层"下一步"按钮调用：推动四动词引导前进。</summary>
+        public void AdvanceStep() => _flow?.AdvanceStep();
+
+        /// <summary>供本机 UI 层"跳过"按钮调用：直接收尾并持久化（下次不再弹）。</summary>
+        public void SkipAll() => _flow?.SkipAll();
     }
 }

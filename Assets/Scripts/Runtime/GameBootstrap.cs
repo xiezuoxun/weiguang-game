@@ -80,12 +80,13 @@ namespace Weiguang.Runtime
         }
 
         /// <summary>6-B 骨架：将场景内所有 ArtBridgeBase 绑定到本实例的 EventBus（art-director 接口约定）。
-        /// 桥为 MonoBehaviour，挂在特定 GameObject 上；此处统一注入，避免静态单例（ADR-005）。</summary>
+        /// 桥为 MonoBehaviour，挂在特定 GameObject 上；此处统一注入，避免静态单例（ADR-005）。
+        /// 打磨（Phase 7-C1）：一并注入运行时降级配置 quality，供需读取档位的桥（如 RevealVisualBridge）使用。</summary>
         void BindArtBridges()
         {
             var bridges = FindObjectsOfType<ArtBridgeBase>();
-            foreach (var b in bridges) b.Bind(_bus);
-            if (bridges.Length > 0) Debug.Log($"[6-B] 已绑定 {bridges.Length} 个 ArtBridge");
+            foreach (var b in bridges) b.Bind(_bus, quality);
+            if (bridges.Length > 0) Debug.Log($"[6-B] 已绑定 {bridges.Length} 个 ArtBridge（quality.maxDustCells={quality.maxDustCells}）");
         }
 
         string Path0() => System.IO.Path.Combine(Application.persistentDataPath, "saves");
