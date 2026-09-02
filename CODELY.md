@@ -7,7 +7,8 @@
 ### Feedback
 
 ### Project
-- [2026-08-27 16:29:21] CI 环境状态：Python 3.11 已通过 winget 安装；Unity Hub 已装在 C:\Program Files\Unity Hub；Unity 个人版 license 已激活，.ulf 文件在 C:\ProgramData\Unity\Unity_lic.ulf；GitHub 仓库 UNITY_LICENSE secret 已配置（.ulf 格式）。CI 层0（契约门 G1/G2/G3）已全绿通过。层1 Unity EditMode 仍失败：game-ci v4 报 "No valid license activation strategy"，可能需要额外配置 UNITY_EMAIL + UNITY_PASSWORD secrets。CI 要求 Unity 2022.3.20f1，本机未安装该版本 Editor。仓库根目录就是 game/（无外层 game/ 子目录），CI 路径已修正为不带 game/ 前缀。
+- [2026-09-02 18:36:42] CI 环境状态（2026-09-02 更新）：本机已装 Unity 2022.3.20f1（C:\Program Files\Unity\Hub\Editor\2022.3.20f1\Editor\Unity.exe）+ 个人版 license。本机 EditMode 165/165 绿、PlayMode 4/4 绿（ArtAcceptanceTests A1-A6 全过）。CI 已改 self-hosted runner（commit 437a1e6），CI #9 Success；GitHub 仓库 xiezuoxun/weiguang-game。Unity batchmode 后台跑测试时包装任务会提前返回，需另起等待 Unity 进程退出再读 XML。
+- [2026-09-02 18:36:44] 本机 git 全局代理指向 127.0.0.1:29290 但该代理常不在线，push/pull 直连 github.com:443 可达——推送用 `git -c http.proxy= -c https.proxy= push origin master` 绕过（勿改全局配置）。Packages/manifest.json 本地改动引用 file:../.codely-cli/ 扩展包，属 Codely 本地工具状态，禁止提交（CI checkout 无此路径会炸）。
 
 ### Reference
 
