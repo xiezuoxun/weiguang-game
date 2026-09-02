@@ -77,13 +77,14 @@ jobs:
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         run: |
-          if [ -z "$UNITY_LICENSE" ]; then
-            echo "ERROR: UNITY_LICENSE secret is empty or not set"
-            exit 1
-          else
-            echo "UNITY_LICENSE is set (length: ${#UNITY_LICENSE})"
-            echo "First 50 chars: ${UNITY_LICENSE:0:50}"
-          fi
+          # Windows runner（self-hosted weiguang-pc）默认 shell 是 PowerShell，bash 语法会解析失败；
+          # 且 self-hosted 本机已激活 license 时，secret 为空也可由 game-ci 复用本机 license
+          # （见 production/phase7-ci-selfhosted.md 备注）——故此处降级为警告而非硬失败。
+          if ([string]::IsNullOrEmpty($env:UNITY_LICENSE)) {
+            Write-Host "WARN: UNITY_LICENSE secret empty - self-hosted runner reuses local Unity license (OK on weiguang-pc)"
+          } else {
+            Write-Host "UNITY_LICENSE is set (length: $($env:UNITY_LICENSE.Length))"
+          }
 
       - name: Run EditMode Tests
         uses: game-ci/unity-test-runner@v4
