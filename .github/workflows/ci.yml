@@ -77,13 +77,14 @@ jobs:
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         run: |
-          # Windows runner（self-hosted weiguang-pc）默认 shell 是 PowerShell，bash 语法会解析失败；
-          # 且 self-hosted 本机已激活 license 时，secret 为空也可由 game-ci 复用本机 license
-          # （见 production/phase7-ci-selfhosted.md 备注）——故此处降级为警告而非硬失败。
+          # Windows runner default shell is PowerShell; keep this block ASCII-only
+          # (PS 5.1 reads UTF-8 no-BOM scripts as ANSI, CJK comments break parsing).
+          # Self-hosted weiguang-pc has a local activated license, so an empty
+          # secret is OK: game-ci reuses the local license (phase7-ci-selfhosted.md).
           if ([string]::IsNullOrEmpty($env:UNITY_LICENSE)) {
-            Write-Host "WARN: UNITY_LICENSE secret empty - self-hosted runner reuses local Unity license (OK on weiguang-pc)"
+            Write-Host "WARN: UNITY_LICENSE secret empty - self-hosted runner reuses local Unity license"
           } else {
-            Write-Host "UNITY_LICENSE is set (length: $($env:UNITY_LICENSE.Length))"
+            Write-Host "UNITY_LICENSE is set"
           }
 
       - name: Run EditMode Tests
