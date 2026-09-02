@@ -48,6 +48,7 @@ Desktop.ini
 
 # --- IDE 插件运行时产物（勿入库）---
 .codely.packages/
+.codely-cli/
 
 # --- CI 产物（本地跑 run-ci.sh 可能生成的临时件）---
 artifacts/
