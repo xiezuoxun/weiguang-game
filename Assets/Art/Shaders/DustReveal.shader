@@ -25,6 +25,7 @@ Shader "Weiguang/DustReveal"
         _Pulse          ("脉冲 Pulse", Float)          = 0.0
         _DustTint       ("积尘色调", Color)            = (0.62, 0.58, 0.52, 1.0)
         _GlowStrength   ("微光强度", Float)            = 1.0
+        _GridRes        ("表现层网格上限 GridRes", Float) = 64.0
     }
 
     SubShader
@@ -79,6 +80,7 @@ Shader "Weiguang/DustReveal"
             float _Threshold;
             float _Pulse;
             float _GlowStrength;
+            float _GridRes;   // C1：表现层网格总格上限（RevealVisualBridge 写入 min(quality.maxDustCells,64)；64=全开档）
             float4 _GlowColor;
             float4 _DustTint;
 
@@ -103,8 +105,17 @@ Shader "Weiguang/DustReveal"
                 half4 base = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv) * IN.color;
 
                 // 尘遮罩：噪点平铺，未拂区域覆盖积尘；遮罩随 _RevealProgress 反向衰减
+                // C1 低内存降采样：_GridRes<64（降级档）时把噪点 UV 量化到 sqrt(_GridRes) 每轴格点，
+                // 尘纹变粗、对齐逻辑网格密度（如 maxDustCells=36 → 6×6 块），低端机视觉密度同步下降；
+                // 64（全开档）保持原采样，分毫不动。
+                float2 dustUV = IN.uv;
+                if (_GridRes < 63.5)
+                {
+                    float perAxis = max(1.0, floor(sqrt(_GridRes)));
+                    dustUV = (floor(IN.uv * perAxis) + 0.5) / perAxis;
+                }
                 float dust = SAMPLE_TEXTURE2D(_DustTex, sampler_DustTex,
-                                              IN.uv * _DustTex_ST.xy + _DustTex_ST.zw).r;
+                                              dustUV * _DustTex_ST.xy + _DustTex_ST.zw).r;
                 float dustAlpha = dust * (1.0 - _RevealProgress);
 
                 // 积尘层颜色（压暗底层 + 灰调）

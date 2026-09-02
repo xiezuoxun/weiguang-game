@@ -61,8 +61,8 @@ namespace Weiguang.Tests
             Assert.LessOrEqual(w * h, 64, "总格必须 ≤ 上限");
             Assert.GreaterOrEqual(w, 1);
             Assert.GreaterOrEqual(h, 1);
-            // 长宽比近似保留（10:20=1:2），6×11=66>64 → 钳回 6×10 或 5×11
-            Assert.AreEqual(2.0, (double)w / h, 0.2, "应保持约 1:2 长宽比");
+            // 长宽比近似保留（10:20=1:2 即 w/h≈0.5），6×11=66>64 → 钳回 6×10 或 5×11（两者 w/h 均落 0.5±0.1）
+            Assert.AreEqual(0.5, (double)w / h, 0.1, "应保持约 1:2 长宽比（w/h≈0.5，修正：原断言 2.0 把比值写反）");
         }
 
         // ── SessionRunner.VisualDustResolution 经 EffectiveDustCellCap 接入 ──
