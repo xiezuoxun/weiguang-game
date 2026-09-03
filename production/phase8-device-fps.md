@@ -53,6 +53,7 @@
      }
      ```
      ⛔ **本块仅为字段格式说明；`<...>` 均为占位、不是真实数据。验收回填以你真机 logcat 实际输出为准，不得把任何示例数字抄进 §6。**
+     🔒 **防伪核验**：真行末尾必有 `"frames":N` 与 `"unity_version":"2022.3.20f1"`，行长比示例长、无 `...` 截断；回填时核这两字段，缺失即视为示例/伪造。
    - **后端**：若已启用 Unity Analytics（见 `phase8-analytics.md` §5），事件 `device_fps` 会上报到 Dashboard → Custom Events。
    - ⚠️ 探针每满 `sampleWindowSec`（默认 **60s**）才上报一次；想更快读数，可在 Inspector 把 `DeviceFpsProbe.sampleWindowSec` 调小（如 10）后出包，或干脆等满 60s。
 6. **记录**：把 `avg_fps` / `min_fps` / `device_model` / `quality_tier` 回填到验收表（见 §5）。
@@ -65,6 +66,8 @@
 | 桌面 / 高内存机（≥2048 MB，全开） | **avg_fps ≥ 60**（或接近设备刷新率） |
 
 未达标时排查方向：降低 `RuntimeQuality.maxDustCells`、关 `enableGlowShader`/`enableChoiceShader`、检查 `DustBudget.CapGrid` 实际分辨率、用 Unity Profiler 定位 CPU/GPU 热点。
+
+> ⚠️ **设备档 vs `quality_tier`**：`RuntimeQuality.ForDevice` 按 `systemMemorySize < 1536MB` 落 `low` 档（全开 = high、半开 = mid）。所以 ≤1024 MB 真·低端机落 `low`，是 **C1 验收（avg ≥ 30）**的对象。Pixel 4a（6 GB）等 ≥1536 MB 手机落 `high`，验收线是 **avg ≥ 60**（属"基线对照"），**不是 C1 验收**。手头若无真·低端机，强制 Inspector 关 Shader 降档可作"最坏路径冒烟"，**不算 C1 正式验收** —— A1 维持 🟡。
 
 ## 5. 备选：Unity Profiler 直测
 
