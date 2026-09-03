@@ -1,0 +1,5 @@
+event_id,season,event_name,description,whisper_modifier
+se_spring,春,檐下燕回,燕子衔泥归来，旧物也像醒了,+暖意
+se_summer,夏,雷雨夜,雷声里，柜中怀表似也轻颤,+颤音
+se_autumn,秋,桂香透窗,桂花落进窗，盖在相框边,+甜香
+se_winter,冬,初雪落定,雪压檐角，断簪之年又过一程,+凉意

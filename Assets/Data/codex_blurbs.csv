@@ -1,0 +1,8 @@
+codex_id,category,title,body,related_item_id
+cx_watch,物件,停摆的怀表,表主说，它停在你走那刻，便再没上过紧,it_watch
+cx_photo,物件,褪色的全家福,一张聚过的全家，散在各处，只剩这张还聚着,it_photo
+cx_letter,物件,未寄出的信,写了又收，收了又写，到底没寄出,it_letter
+cx_ornament,物件,断裂的银簪,簪断于冬夜，她却留着断口不肯补,it_ornament
+cx_mirror,物件,蒙尘的梳妆镜,镜上灰遮的，从来不是镜,it_mirror
+cx_shop,处所,微光归处,半条街的旧念想都收在这间铺子里,
+cx_keeper,人物,掌柜,他守着铺子，也守着客人不愿丢的从前,

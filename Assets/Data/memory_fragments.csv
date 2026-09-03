@@ -1,0 +1,14 @@
+memory_id,item_id,fragment_index,memory_text,emotion,unlock_hint
+mem_watch_0,it_watch,0,你说出门买糖，回来却只剩一只空袖,恸转释,合上表盖时想起
+mem_photo_0,it_photo,0,那年过年，全家挤在镜头前，笑得歪,暖,擦亮框角时
+mem_photo_1,it_photo,1,后来各奔东西，只剩这张还聚着,怅,翻到背面字样
+mem_letter_0,it_letter,0,写时是辩解，读时是告别,涩,信纸起卷处
+mem_letter_1,it_letter,1,末句是勿念，可句句都是念,酸,落款那行小字
+mem_orn_0,it_ornament,0,你替我挽发，指凉凉的,柔,触到断口
+mem_orn_1,it_ornament,1,冬夜一声脆，簪断人也散,凉,拼起半截
+mem_orn_2,it_ornament,2,我捡起断簪，没敢声张,忍,找着另半
+mem_orn_3,it_ornament,3,至今我仍留着，像还在等你挽,念,全部拼齐
+mem_mirror_0,it_mirror,0,从前镜里是两个人的晨妆,甜,抹开一角灰
+mem_mirror_1,it_mirror,1,你走后，我只敢照一半,怯,照见半张脸
+mem_mirror_2,it_mirror,2,灰尘遮的不是镜，是我自己,悟,擦到中央
+mem_mirror_3,it_mirror,3,清了镜，也清了这些年不敢看的,释,整面见底

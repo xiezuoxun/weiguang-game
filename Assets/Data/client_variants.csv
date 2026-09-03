@@ -1,0 +1,9 @@
+client_variant_id,client_id,state_label,relationship_req,dialogue_mood,note
+cv_shen_1,cl_shen,初来,1,拘谨,抱着木盒，不肯多说
+cv_shen_2,cl_shen,熟了,2,松弛,会坐下喝口茶，话多了些
+cv_lin_1,cl_lin,犹豫,0,迟疑,在门口转了三回才进来
+cv_lin_2,cl_lin,安心,2,平和,相框挂回后，他常来坐坐
+cv_ming_1,cl_ah_ming,少年气,0,跳脱,把信举到灯下，笑说荒唐
+cv_ming_2,cl_ah_ming,沉静,2,柔软,读信那夜后，话里多了重量
+cv_su_1,cl_su,疏离,0,淡漠,总隔着一层，像镜上的灰
+cv_su_2,cl_su,亲近,2,温柔,镜清了，她也肯近人

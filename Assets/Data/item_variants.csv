@@ -1,0 +1,11 @@
+variant_id,item_id,variant_name,material_override,condition,unlock_condition,note
+var_watch_a,it_watch,走慢的表,Glass,微修,after_com_001,表针复走，却慢了半拍，像不敢追上你
+var_watch_b,it_watch,停在旧处,Glass,原样,default,不动它，让时间停在你走那刻
+var_photo_a,it_photo,擦亮的相框,Paper,清洁,after_com_002,框里的人又清晰了，笑得像从前
+var_photo_b,it_photo,抽屉里的相,Paper,收纳,after_com_002_reframe,先收着，等晴天再挂
+var_letter_a,it_letter,读过的信,Paper,展开,after_com_003,信被风读过，边角起了卷
+var_letter_b,it_letter,夹书的信,Paper,收存,after_com_003_omit,夹回书里，页间留了印
+var_ornament_a,it_ornament,收好的断簪,Wood,收纳,after_com_004,断簪入怀，贴身温着
+var_ornament_b,it_ornament,断口之间,Wood,原样,default,不补，让断口记住那年冬夜
+var_mirror_a,it_mirror,擦清的镜,Glass,清洁,after_com_005,镜面清了，她敢看自己
+var_mirror_b,it_mirror,半开的镜,Glass,留雾,default,留一点灰，半开半掩

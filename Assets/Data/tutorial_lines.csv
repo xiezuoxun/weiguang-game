@@ -1,0 +1,6 @@
+step_id,step_name,trigger,line,next_step
+tut_001,初入铺子,on_first_open,欢迎来微光归处，旧物会在这里等你想起来,tut_002
+tut_002,认领委托,after_enter_map,每位客人带来一件旧物，轻轻接过来就好,tut_003
+tut_003,拂去尘埃,on_first_grid,拖动指尖，把蒙尘处一点点擦清,tut_004
+tut_004,倾听低语,on_first_whisper,擦到某处，它会悄悄说句话,tut_005
+tut_005,替它抉择,on_first_choice,你说什么，旧物便如何安放,done

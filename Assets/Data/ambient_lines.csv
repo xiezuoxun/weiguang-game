@@ -1,0 +1,6 @@
+line_id,context,trigger,text,mood
+amb_001,清晨开铺,on_open,木门一响，灰尘在光里浮,静
+amb_002,午后无客,idle_long,钟摆声比客多，一下一下,寂
+amb_003,雨日,on_rain,雨打檐角，柜里的旧物都静了,怅
+amb_004,黄昏,on_dusk,光斜进来，正好落在那只表上,暖
+amb_005,闭铺,on_close,落了锁，明日它们还在,安

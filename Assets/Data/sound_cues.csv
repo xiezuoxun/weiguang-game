@@ -1,0 +1,7 @@
+cue_id,event,clip_name,volume,loop,description
+sc_open,开铺,amb_door_creak,0.6,false,木门轻响，一日始
+sc_idle,闲置,amb_tick_soft,0.4,true,极轻钟摆，衬出静
+sc_reveal,低语浮现,sfx_whisper_rise,0.7,false,擦到关键处，耳语浮起
+sc_truth,抉择真,mus_resolve_warm,0.8,false,选了真，弦乐回暖
+sc_omit,抉择藏,mus_hold_dim,0.6,false,选了藏，音压低半格
+sc_close,闭铺,amb_lock_soft,0.5,false,落锁一声，归于安

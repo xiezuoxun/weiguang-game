@@ -7,7 +7,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Weiguang.Core;
+using Weiguang.Core.Analytics;
 using Weiguang.Runtime.ArtBinding;
+using Weiguang.Runtime.Analytics;
 
 namespace Weiguang.Runtime
 {
@@ -26,8 +28,17 @@ namespace Weiguang.Runtime
         Dictionary<string, MemoryItem> _items;
         SaveSnapshot _snapshot;
 
+        // Phase 8-A/B：埋点与帧率探针（纯 C# 核心 + 设备 sink，生命周期随 GameBootstrap）
+        AnalyticsTracker _analytics;
+        IAnalyticsSink _analyticsSink;
+        DeviceFpsProbe _fpsProbe;
+
         /// <summary>打磨：运行时画质/降级配置，Awake 按设备档位初始化，供 SessionRunner / 美术 Shader 读取。</summary>
         public RuntimeQuality quality = new RuntimeQuality();
+
+        /// <summary>Phase 8-B：是否启用真机帧率探针。默认关（沙箱/Editor 不跑）；设备包经 #if 自动开启，
+        /// 也可在 Inspector 手动勾选后再出包（见 production/phase8-device-fps.md）。</summary>
+        public bool enableDeviceFpsProbe = false;
 
         /// <summary>打磨：存档失败的用户侧回调（Unity UI 可挂"进度未保存"提示）。
         /// 与 EVT_SAVE_FAILED 日志并存——日志供工程排查，此回调供玩家可见反馈。</summary>
@@ -55,6 +66,8 @@ namespace Weiguang.Runtime
 
             // 打磨：按设备档位初始化降级配置（移动端/低内存机自动降级）
             quality = RuntimeQuality.ForDevice(Application.isMobilePlatform, SystemInfo.systemMemorySize);
+
+            WireAnalytics(); // Phase 8-A/B：埋点 + 真机帧率探针（须在首个 Publish 之前接线）
 
             LoadData();
             _snapshot = _save.LoadLatest();
@@ -87,6 +100,42 @@ namespace Weiguang.Runtime
             var bridges = FindObjectsOfType<ArtBridgeBase>();
             foreach (var b in bridges) b.Bind(_bus, quality);
             if (bridges.Length > 0) Debug.Log($"[6-B] 已绑定 {bridges.Length} 个 ArtBridge（quality.maxDustCells={quality.maxDustCells}）");
+        }
+
+        // ── Phase 8-A/B：埋点 + 真机帧率探针接线 ──────────────────
+        /// <summary>埋点接线。默认用 LogAnalyticsSink（Editor/CI 可读可测）；设备包（Android/iOS）换 UnityAnalyticsSink
+        /// 转发到 Unity Analytics。订阅须在 Awake 内、首个 Publish（EVT_FIRST_LAUNCH / EVT_COMMISSION_START 均在
+        /// Awake 中发出）之前完成，故此处于 bus + quality 就绪后接线，而非 OnEnable，否则会漏掉首启动与首委托事件。</summary>
+        void WireAnalytics()
+        {
+            _analyticsSink = new LogAnalyticsSink(); // 默认：日志出口
+#if UNITY_ANDROID || UNITY_IOS
+            // 设备上：改用 Unity Analytics 出口（MonoBehaviour，挂到本 GameObject）
+            var ua = gameObject.AddComponent<UnityAnalyticsSink>();
+            _analyticsSink = ua;
+#endif
+            _analytics = new AnalyticsTracker(_bus, _analyticsSink);
+            _analytics.Subscribe();
+
+            // 真机帧率探针：仅设备包默认启用（沙箱/Editor 不跑，避免无 GPU 下刷屏日志）。
+            bool runFpsProbe = enableDeviceFpsProbe;
+#if UNITY_ANDROID || UNITY_IOS
+            runFpsProbe = true;
+#endif
+            if (runFpsProbe)
+            {
+                _fpsProbe = gameObject.AddComponent<DeviceFpsProbe>();
+                _fpsProbe.sink = _analyticsSink;
+                _fpsProbe.quality = quality;
+                _fpsProbe.StartSampling();
+            }
+        }
+
+        /// <summary>生命周期清理：精准退订埋点 handler，并补报最后一次 FPS 窗口。</summary>
+        void OnDestroy()
+        {
+            _analytics?.Unsubscribe();
+            if (_fpsProbe != null) _fpsProbe.StopSampling();
         }
 
         string Path0() => System.IO.Path.Combine(Application.persistentDataPath, "saves");
