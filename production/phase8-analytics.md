@@ -64,14 +64,31 @@ IAnalyticsSink (Core)
 - `UnityAnalyticsSink` 仅在 `UNITY_ANDROID || UNITY_IOS` 下被 `GameBootstrap` 实例化；真实 `UnityEngine.Analytics.Analytics.CustomEvent` 调用再受 `#if UNITY_ANALYTICS` 守卫，未启用 Analytics 包时退化为 `Debug.Log`，**保证 Runtime 程序集永远可编译**。
 - 嵌套结构（抉择分布 / 漏斗）在 `UnityAnalyticsSink` 内被拍平成「键=JSON 字符串」，满足 Unity Analytics 的原始值约束。
 
-## 5. 设备上启用 Unity Analytics
+## 5. 设备上启用真实 Unity Analytics（启用配方）
 
-1. 安装并启用 Unity **Analytics** 服务（Services 窗口 / Dashboard），Player Settings 勾选 Analytics，使 `UNITY_ANALYTICS` 脚本宏定义生效。
-2. 出 **Android / iOS** 包：`GameBootstrap.WireAnalytics()` 在 `UNITY_ANDROID || UNITY_IOS` 下自动 `AddComponent<UnityAnalyticsSink>()`，把 `_analyticsSink` 从 `LogAnalyticsSink` 换成 `UnityAnalyticsSink`。
-3. 真机运行后，所有 `Track` 自动经 `Analytics.CustomEvent` 上报，可在 **Unity Dashboard → Analytics → Custom Events** 查看 `reveal_whisper` / `assemble_complete` / `choice_made` / `archived` / `analytics_metrics` / `device_fps` 等。
-4. Editor / CI 默认走 `LogAnalyticsSink`，埋点日志打印到 Console，单测可断言（见 §6）。
+> ⚠️ 代码目标 API 是**旧版** `UnityEngine.Analytics.Analytics.CustomEvent`（见 `UnityAnalyticsSink.cs:23`）。
+> 这要求装**旧版 Analytics 包 `com.unity.analytics`**（暴露 `UnityEngine.Analytics` 命名空间）。
+> 新版「Unity Analytics」(`com.unity.services.analytics`) 用的是 `Unity.Services.Analytics` 命名空间与不同 API，**不兼容本代码**；如坚持用新版，提变更单改 `UnityAnalyticsSink` 的实现。
 
-> 若需在 Editor 也走 Unity Analytics，可临时把 `WireAnalytics` 中的平台判断放宽，或手动 `gameObject.AddComponent<UnityAnalyticsSink>()` 并赋给 `_analyticsSink`——但生产默认保持「设备才走 Unity Analytics」。
+### 前置依赖
+- Unity 2022.3.20f1 工程，已装旧版 Analytics 包（`Window → Package Manager → 搜 Analytics`，或 `com.unity.analytics`）。
+- Unity Dashboard 已创建并**关联本项目**，Analytics 服务已启用（legacy Analytics 需 Dashboard 激活后才上报）。
+
+### 启用步骤（每设备包一次）
+1. **装包**：Package Manager 安装 `com.unity.analytics`（旧版）。
+2. **翻宏**：`Project Settings → Player → 目标平台 (Android/iOS) → Scripting Define Symbols`，在现有符号后追加 `;UNITY_ANALYTICS`（分号分隔）。
+   - ⚠️ 翻 `UNITY_ANALYTICS` 宏**必须同时完成第 1 步装包**，否则 `UnityEngine.Analytics` 命名空间缺失，`UnityAnalyticsSink.cs:23` 编译报错。
+3. **（如需）补 asmdef 引用**：若编译报 `The type or namespace name 'Analytics' does not exist in 'UnityEngine'`，在 `Weiguang.Runtime.asmdef` 的 `references` 加 Analytics 程序集（具体名用 Assembly Finder 查该包 asmdef，通常为 `UnityEngine.Analytics` 或 `Unity.Analytics`）。
+4. **出包**：`GameBootstrap.WireAnalytics()` 已在 `UNITY_ANDROID || UNITY_IOS` 下自动 `AddComponent<UnityAnalyticsSink>()`，把 `_analyticsSink` 从 `LogAnalyticsSink` 换成 `UnityAnalyticsSink`，**无需改代码**。
+5. **真机运行**：所有 `Track` 经 `Analytics.CustomEvent` 上报。
+
+### 验证
+- **Editor / CI（宏未定义）**：Console 出现 `[Analytics] <event> {...}`（Debug.Log 兜底），单测可断言 —— 证明链路通。
+- **设备包（宏定义 + 装包）**：Unity Dashboard → Analytics → Custom Events 实时出现事件：
+  `reveal_whisper` / `assemble_complete` / `choice_made` / `archived` / `analytics_metrics` / `device_fps`。
+  看不到事件 → 查 Dashboard 项目关联、Analytics 是否启用、包是否装对（必须是旧版 `com.unity.analytics`）。
+
+> 沙箱无 Unity，无法实际翻宏/装包/看 Dashboard —— 本配方为**你可以在本机一步到位执行**的清单；宏与包属编辑器侧操作，主程在沙箱只保证代码路径正确（`#if UNITY_ANALYTICS` 守卫 + 设备自动换 sink）。
 
 ## 6. 测试覆盖
 

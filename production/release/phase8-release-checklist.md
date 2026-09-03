@@ -9,7 +9,7 @@
 ## A. 待本机真机补录项（Phase 7 留存，发布前必须闭合）
 | # | 项 | 状态 | 负责人 | 备注 / 验收口径 |
 |---|----|------|--------|----------------|
-| A1 | 真机降级帧率 ≥30fps（低内存机 ≤1024MB，Profiler 实测） | 🟡 | 程基岩 + 真机验收 | 桌面端已绿；经内测帧率矩阵回流验收（见 `test-recruitment.md` §7） |
+| A1 | 真机降级帧率 ≥30fps（低内存机 ≤1024MB，Profiler 实测） | 🟡 | 程基岩 + 真机验收 | 探针代码就绪（`DeviceFpsProbe`）；回填表见 `phase8-device-fps.md` §6，待真机实测 avg≥30 翻 ✅；桌面端基线对照 ≥60 |
 | A2 | Canvas 真机 UI（首启四步引导 + 各面板真机渲染） | 🟡 | 程基岩 / 林绘澄 | `OnboardingCanvasView` 本机补全；真机核对 RectTransform 与动画 |
 | A3 | 美术资产最终版本（物件 / 碎片 / 结局卡 / 铺子主视觉） | 🟡 | 林绘澄 | 命名对齐 `item_id`/`fragment_id`/`ending_id`（见 `phase6-launch-assets.md` §4） |
 | A4 | 音频终混（BGM + 音效 `sound_cues.csv` 映射） | 🟡 | 阮和声 | 低频环境 + 收尾上行五度；旁白/低语混音定稿 |
@@ -65,5 +65,6 @@
 | F2 | Phase 8 数据埋点单测 `AnalyticsTrackerTests` 实跑通过 | ✅ | 含于 183（165 基线 + 18 Phase 8 新增），全过 |
 | F3 | Runtime 层可编译（`UnityAnalyticsSink` / `DeviceFpsProbe` / `GameBootstrap` 接线） | ✅ | run #18 编译期零错误（183 测试可编译即证明） |
 | F4 | 无 `continue-on-error` 软绿 / 本机 Unity.exe 直跑 | ✅ | `ci.yml` `continue-on-error`=0；`unity-editmode.log` 见 `-projectPath / -runTests` + LicenseClient 启动（PId 54020） |
+| F5 | 真实 Unity Analytics 启用配方（UNITY_ANALYTICS 宏 + 旧版 com.unity.analytics 包 + Dashboard 关联） | 🟡 文档/代码就绪 | 见 `phase8-analytics.md` §5；宏与包装属本机编辑器操作，沙箱只保证代码路径正确（`#if UNITY_ANALYTICS` 守卫 + 设备自动换 sink） |
 
-> 注：真机帧率（A1）、Canvas 真机 UI（A2）、美术/音频终版（A3–A4）仍属本机/真机验收项，不在 CI 覆盖；详见 `phase8-device-fps.md`。
+> 注：真机帧率（A1）、Canvas 真机 UI（A2）、美术/音频终版（A3–A4）、真实 Unity Analytics 启用（F5）仍属本机/真机/编辑器验收项，不在 CI 覆盖；详见 `phase8-device-fps.md` 与 `phase8-analytics.md` §5。
