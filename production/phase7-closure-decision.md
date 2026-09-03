@@ -4,6 +4,7 @@
 > 初裁日期：2026-09-03（背景：CI 排障中，P0-① 待 self-hosted runner 真绿）
 > 升级日期：2026-09-03（DONE 签收版）
 > 升级依据：CI run #17（`6831f7a`）Status **Success**，层0 + 层1 双绿；沙箱 WebFetch 实查 `xiezuoxun/weiguang-game/actions/workflows/ci.yml` 与 run #17 详情，确认真绿三判据齐备（self-hosted 本地 Unity.exe + 硬门 editmode.xml + 无 `continue-on-error`）；用户本机回报 P0-② C1/C2 完成（commit `a4e5839`）。
+> 终验日期：2026-09-03（run #18 @ `8ae960c` 合并提交，四重判据齐备 + Phase 8 同步验证）
 
 ---
 
@@ -11,7 +12,7 @@
 
 ### ✅ Phase 7 整体：DONE（2026-09-03 签收）
 
-**沙箱侧 P0-② 逻辑 + 本机验收全闭环；P0-① CI 真绿（self-hosted runner 本地 Unity 非 docker，硬门验证）已证。**
+**沙箱侧 P0-② 逻辑 + 本机验收全闭环；P0-① CI 真绿（self-hosted runner 本地 Unity 非 docker，硬门验证）已证；run #18 (`8ae960c`) 终验，四重判据齐备，Phase 7 P0-① 终端坐实。**
 真机降级帧率（低端机 Profiler 实测 ≥30fps）属本机真机验收项，桌面端已绿，留作**发布前补录项**，不阻塞 Phase 7 收口。
 
 ### ✅ 沙箱侧 P0-② 逻辑：准予收口（已交付）
@@ -26,7 +27,7 @@ C1 降级分辨率封顶 + C2 首启引导流程 + 两 EditMode 测试，全部�
 |---|---|---|---|
 | P0-②-C1 降级分辨率 | `Runtime/DustBudget.cs`（`CapGrid` 等比封顶）+ `SessionRunner.VisualDustResolution` + `ArtBridgeBase.Bind(bus,quality)` 重载 + `GameBootstrap` 注入 + `RevealVisualBridge` 写 `_GridRes` + `DustBudgetTests` | `a4e5839` | ✅ |
 | P0-②-C2 首启引导 | `Runtime/Onboarding/OnboardingFlow.cs`（四动词流转 + `IOnboardingView`/`IOnboardingStore` + `PlayerPrefsOnboardingStore` key `weiguang.onboarding.done`）+ `OnboardingUIRuntimeBridge` 托管 + `OnboardingCanvasView.cs` 骨架 + `OnboardingFlowTests` | `a4e5839` | ✅ |
-| P0-① CI 真绿 | `ci.yml` 改 `self-hosted,unity` + 本地 `Unity.exe` 直跑（弃 game-ci docker）+ 硬门 `editmode.xml` + 去 CJK 注释（ASCII-only）+ 启 Unity 前剥离继承代理 env | `6831f7a`（最终稳定态，演进 #11→#17） | ✅ |
+| P0-① CI 真绿 | `ci.yml` 改 `self-hosted,unity` + 本地 `Unity.exe` 直跑（弃 game-ci docker）+ 硬门 `editmode.xml` + 去 CJK 注释（ASCII-only）+ 启 Unity 前剥离继承代理 env | `6831f7a`（最终稳定态，演进 #11→#17）+ `1954347`（合并线，proxy 剥离 + Start-Process） | ✅ |
 
 ---
 
@@ -67,6 +68,27 @@ Latest run **#17（`6831f7a`）Status: Success，Total 3m 59s**
 
 至此 CI 真绿稳定。
 
+## 四（续）· 最终真绿复核（run #18 @ 8ae960c，Phase 8 合并提交）
+
+> 复核日期：2026-09-03　|　head `8ae960c`（合并提交：本地 phase8 内容线 `d95ac8d` + bundle CI 硬门线 `1954347`）
+> 触发：用户本机 pull `weiguang-p8.bundle` → merge `8ae960c` → `git push origin master`（代理绕过模式），共交付 6 提交；本地 `Packages/manifest.json` 的 Codely 本地引用改动按约束未提交。
+
+run **#18（`8ae960c`）Status: Success，job id 100512685304**
+
+| 验证点 | 证据 |
+|---|---|
+| layer1 Success | run #18 conclusion=success；层1 全步骤绿（含 `Run EditMode Tests`），层0 契约门 I1 同样全绿 |
+| 日志见本机 Unity | `unity-editmode.log`（`C:\actions-runner\_work\weiguang-game\weiguang-game\artifacts\unity-editmode.log`，11:35:52）含 `COMMAND LINE ARGUMENTS: -projectPath / -runTests`；`Licensing Client` 成功启动（`LicenseClient-lenovo`, PId 54020）—— **proxy 剥离 + Start-Process 修复的直接证据** |
+| 无 continue-on-error | `ci.yml` 全文件 `continue-on-error` 出现次数 = 0 |
+| 硬门产出 editmode.xml | `total=183 / passed=183 / failed=0 / skipped=0 / duration=3.35s`（`C:\actions-runner\_work\weiguang-game\weiguang-game\artifacts\editmode.xml`，11:35:51）。183 = 165 基线 + **18 个 Phase 8 新增测试**（数据埋点 `AnalyticsTrackerTests` + 帧率探针相关），全过 |
+
+**四重判据齐备 → Phase 7 P0-① CI 真绿 终端坐实。**
+
+**Phase 8 同步验证（本次 run 的新增价值）：**
+- 183 含 Phase 8 落地的 `AnalyticsTrackerTests`（数据埋点单测）与帧率探针相关编译/测试 → 证明 Runtime 层（`UnityAnalyticsSink` / `DeviceFpsProbe` / `GameBootstrap` 接线）可编译、`AnalyticsTracker` 逻辑实跑且过。
+- 即 `8ae960c` 这一绿，同时收口「Phase 7 CI 真绿」+「Phase 8 工程侧可编译可测」，无需额外 CI run。
+- 真机帧率（低端机 ≥30fps）、Canvas 真机 UI、美术/音频终版仍属本机/真机验收项（见 `release/phase8-release-checklist.md` A1–A4），不阻塞本次 CI 收口。
+
 ---
 
 ## 五、Phase 7 整体 DONE 签收
@@ -75,7 +97,7 @@ Latest run **#17（`6831f7a`）Status: Success，Total 3m 59s**
 |---|---|---|
 | P0-②-C1 降级分辨率 | ✅ | 沙箱逻辑 + 本机 EditMode 全绿；`DustReveal.shader` 露 `_GridRes` 降采样 |
 | P0-②-C2 首启引导 | ✅ | 沙箱流程 + 本机 Canvas 4 步引导 + 持久化（`weiguang.onboarding.done`） |
-| P0-① CI 真绿 | ✅ | run #17 双绿，硬门验证，无 `continue-on-error` |
+| P0-① CI 真绿 | ✅ | run #17 双绿 + **终验 run #18 @ 8ae960c：183/183 全过（含 18 Phase 8 新增）**，硬门验证，无 `continue-on-error` |
 | 真机降级帧率补录 | 🟡 | 低内存机 Profiler ≥30fps，发布前补录（桌面端已绿） |
 
 **所有"非阻塞留作补录项"已明确标记，不影响 Phase 7 整体 DONE 签收。**
@@ -89,19 +111,23 @@ Latest run **#17（`6831f7a`）Status: Success，Total 3m 59s**
 1. **self-hosted runner 的 PowerShell 5.1 把无 BOM UTF-8 `ci.yml` 当 ANSI 读，CJK 注释破坏 YAML 解析** → CI `run:` 步骤直接抛异常退出。修复 = ASCII-only `ci.yml`（或加 BOM / 改用 bash shell）。这是 #13 真死因，与全局代理无关。
 2. **game-ci/unity-test-runner 是 docker action**，self-hosted Windows 未装 docker → `Unable to locate executable file: docker`。改直接调本机 `Unity.exe` 批处理跑 EditMode（与本机手动命令一致，165/165 即 ground truth）。
 3. **死代理 env 会被 runner 继承并破坏 Unity 激活**（.NET Core 读 `HTTPS_PROXY` → `Unity.Licensing.Client` token 更新失败 → Unity `exit 0` 未跑测试）。启 Unity 前剥离。
-4. **绝不 self-signoff "绿"**：必须 `layer1 Success` + 日志见本机 `Unity.exe` 路径 + 无 `continue-on-error` 三判据齐备；并以 `editmode.xml` 硬门（`total>0 / failed=0 / passed==total`）二次印证。
+4. **绝不 self-signoff "绿"**：必须 `layer1 Success` + 日志见本机 `Unity.exe` 路径 + 无 `continue-on-error` 三判据齐备；并以 `editmode.xml` 硬门（`total>0 / failed=0 / passed==total`）二次印证。run #18 进一步把判据扩为四重（加 editmode.xml 实物数字复核），并将验证范围从 Phase 7 延伸到 Phase 8 工程侧。
 
 ---
 
-## 七、Phase 8 候选（待用户拍板）
+## 七、Phase 8 状态（已落地，CI #18 验证）
 
-1. **真机补录（高优）**：低端机降级帧率 Profiler 实测 ≥30fps
-2. **内容扩充**：7 张 CSV → 20 张（物件变体 / 客户变体 / 低语主题）
-3. **数据埋点**：接入 Unity Analytics，监测四动词首见率、碎片吸附率、抉择分布
-4. **发布准备**：TapTap / Steam / WeGame 商店页 + 30s 视频 + 测试招募
+> Phase 8 四件套已于 2026-09-03 全部落地并经 CI #18（`8ae960c`）真绿验证（详见 `production/phase8-*.md` 与 `release/`）。
+
+| # | 原候选 | 状态 | 落地产物 |
+|---|--------|------|----------|
+| 1 | 真机补录（高优） | 🟡 代码就绪，待真机实测 | `DeviceFpsProbe` + `phase8-device-fps.md`（低端机 ≥30fps 验收线待回填） |
+| 2 | 内容扩充 7→20 CSV | ✅ | 新增 12 表，`validate_contract` PASS（exit 0），旧 8 表未动 |
+| 3 | 数据埋点 | ✅ | `Core/Analytics` + `Runtime/Analytics` + `GameBootstrap` 接线 + `AnalyticsTrackerTests`（CI #18 实跑通过） |
+| 4 | 发布准备 | ✅ 文档齐 | `release/` 六篇（TapTap/Steam/WeGame/30s trailer/测试招募/总检表） |
 
 ---
 
 ### 下一步动作
-- **用户**：从 Phase 8 候选选方向；或提供 `master` bundle 让我把本裁定文档 + `phase7-plan.md` 更新干净提交后回传 bundle（避免与远程 `6831f7a` 产生分叉）。
-- **主理人**：按用户拍板方向启动 Phase 8（仍按七阶段流水线）。
+- **用户**：本机真机按 `phase8-device-fps.md` 实测低端机帧率并回填；或接真实 Unity Analytics（设备包开 `UNITY_ANALYTICS`）；或按 `release/phase8-release-checklist.md` 推进三平台提审。
+- **主理人**：`phase7-retro.md` 复盘文档（建议同期提交，见第六节）可补；其余按用户拍板推进 Phase 8 真机/发布项。

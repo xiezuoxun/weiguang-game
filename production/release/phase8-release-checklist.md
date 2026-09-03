@@ -54,3 +54,16 @@
 - **文案侧（本任务）**：B1–B3、C1、D1 已交付初稿（✅），不阻塞其余项推进。
 
 > 本表随 Phase 8 推进每周更新；状态变更须附负责人与验收证据（如内测帧率矩阵、素材交付记录）。
+
+---
+
+## F. 工程 CI 验证（Phase 8 代码，run #18 @ 8ae960c）
+
+| # | 项 | 状态 | 证据 |
+|---|----|------|------|
+| F1 | EditMode 全量测试实跑（非 exit 0 假绿） | ✅ | run #18 `editmode.xml` `total=183/passed=183/failed=0/skipped=0`，硬门 `total>0/failed=0/passed==total` 通过 |
+| F2 | Phase 8 数据埋点单测 `AnalyticsTrackerTests` 实跑通过 | ✅ | 含于 183（165 基线 + 18 Phase 8 新增），全过 |
+| F3 | Runtime 层可编译（`UnityAnalyticsSink` / `DeviceFpsProbe` / `GameBootstrap` 接线） | ✅ | run #18 编译期零错误（183 测试可编译即证明） |
+| F4 | 无 `continue-on-error` 软绿 / 本机 Unity.exe 直跑 | ✅ | `ci.yml` `continue-on-error`=0；`unity-editmode.log` 见 `-projectPath / -runTests` + LicenseClient 启动（PId 54020） |
+
+> 注：真机帧率（A1）、Canvas 真机 UI（A2）、美术/音频终版（A3–A4）仍属本机/真机验收项，不在 CI 覆盖；详见 `phase8-device-fps.md`。
