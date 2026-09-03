@@ -94,24 +94,37 @@ jobs:
           # Self-hosted Windows runner hosts Unity 2022.3.20f1 locally.
           # game-ci/unity-test-runner is a docker action (docker not installed
           # on this machine), so invoke the local Unity Editor directly.
-          # Exit codes: 0 = all tests passed, 2 = test failures, other = error.
+          # HARD GATE: Unity can exit 0 after a licensing soft-fail without
+          # running any test, so the step verifies the results XML itself.
           $unity = 'C:\Program Files\Unity\Hub\Editor\2022.3.20f1\Editor\Unity.exe'
           if (-not (Test-Path -LiteralPath $unity)) {
             Write-Host "::error::Unity editor not found at $unity"
             exit 3
           }
           New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\artifacts" | Out-Null
+          $xmlPath = "$env:GITHUB_WORKSPACE\artifacts\editmode.xml"
+          if (Test-Path $xmlPath) { Remove-Item $xmlPath -Force }
           & $unity -batchmode -nographics `
             -projectPath "$env:GITHUB_WORKSPACE" `
             -runTests -testPlatform EditMode `
-            -testResults "$env:GITHUB_WORKSPACE\artifacts\editmode.xml" `
+            -testResults $xmlPath `
             -logFile "$env:GITHUB_WORKSPACE\artifacts\unity-editmode.log"
           $code = $LASTEXITCODE
-          if (Test-Path "$env:GITHUB_WORKSPACE\artifacts\editmode.xml") {
-            [xml]$r = Get-Content "$env:GITHUB_WORKSPACE\artifacts\editmode.xml" -Raw
-            Write-Host ("EditMode total=" + $r.'test-run'.total + " passed=" + $r.'test-run'.passed + " failed=" + $r.'test-run'.failed)
+          Write-Host ("Unity exit code: " + $code)
+          if (-not (Test-Path $xmlPath)) {
+            Write-Host "::error::editmode.xml not produced - Unity exited before running tests (see unity-editmode.log)"
+            exit 4
           }
-          exit $code
+          [xml]$r = Get-Content $xmlPath -Raw
+          $total = [int]$r.'test-run'.total
+          $passed = [int]$r.'test-run'.passed
+          $failed = [int]$r.'test-run'.failed
+          Write-Host ("EditMode total=" + $total + " passed=" + $passed + " failed=" + $failed)
+          if ($total -le 0 -or $failed -gt 0 -or $passed -lt $total) {
+            Write-Host "::error::EditMode gate failed (total/failed/passed above)"
+            exit 5
+          }
+          exit 0
 
       - name: Upload EditMode Test Results
         if: always()
