@@ -106,7 +106,7 @@ run **#18（`8ae960c`）Status: Success，job id 100512685304**
 
 ## 六、复盘
 
-详见 `phase7-retro.md`（建议同期提交）。关键教训：
+详见 `phase7-retro.md`（已同期提交）。关键教训：
 
 1. **self-hosted runner 的 PowerShell 5.1 把无 BOM UTF-8 `ci.yml` 当 ANSI 读，CJK 注释破坏 YAML 解析** → CI `run:` 步骤直接抛异常退出。修复 = ASCII-only `ci.yml`（或加 BOM / 改用 bash shell）。这是 #13 真死因，与全局代理无关。
 2. **game-ci/unity-test-runner 是 docker action**，self-hosted Windows 未装 docker → `Unable to locate executable file: docker`。改直接调本机 `Unity.exe` 批处理跑 EditMode（与本机手动命令一致，165/165 即 ground truth）。
