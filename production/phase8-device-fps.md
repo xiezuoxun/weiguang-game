@@ -37,8 +37,14 @@
 4. **等待采样**：让 `DeviceFpsProbe` 至少跑满 **60 秒**（默认窗口）。
 5. **读数**（任一方式）：
    - **屏上**：探针 `showOnScreen=true` 时左上角实时显示 `FPS live / avg@win / min@win (tier)`；
-   - **日志**：`UnityAnalyticsSink` 在未定义 `UNITY_ANALYTICS` 时 `Debug.Log("[Analytics] device_fps {...}")`；连设备用 `adb logcat` / Xcode 控制台抓取；
-   - **后端**：若已启用 Unity Analytics，事件 `device_fps` 会上报到 Dashboard → Custom Events。
+   - **日志（最省事，无需启用 Analytics）**：`GameBootstrap` 在 `UNITY_ANDROID || UNITY_IOS` 下已自动 `AddComponent<UnityAnalyticsSink>()`；未定义 `UNITY_ANALYTICS` 时它走 `Debug.Log("[Analytics] device_fps {...}")`，所以**装包即出数**。连设备抓：
+     ```bash
+     adb logcat -d | grep -i "device_fps"
+     # 输出形如：[Analytics] device_fps {"avg_fps":58.3,"min_fps":41.2,"device_model":"Pixel 4a","quality_tier":"low","sample_sec":60,...}
+     ```
+     （iOS 用 Xcode 控制台搜 `device_fps`。）
+   - **后端**：若已启用 Unity Analytics（见 `phase8-analytics.md` §5），事件 `device_fps` 会上报到 Dashboard → Custom Events。
+   - ⚠️ 探针每满 `sampleWindowSec`（默认 **60s**）才上报一次；想更快读数，可在 Inspector 把 `DeviceFpsProbe.sampleWindowSec` 调小（如 10）后出包，或干脆等满 60s。
 6. **记录**：把 `avg_fps` / `min_fps` / `device_model` / `quality_tier` 回填到验收表（见 §5）。
 
 ## 4. 验收线
