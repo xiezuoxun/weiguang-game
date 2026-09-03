@@ -102,14 +102,27 @@ jobs:
             exit 3
           }
           New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\artifacts" | Out-Null
+          # Diagnose + neutralize stale proxy env: the Listener inherits the shell that
+          # started it; a dead HTTP(S)_PROXY (127.0.0.1) makes Unity.Licensing.Client
+          # (.NET Core honors these vars) fail its token update -> Unity exits 0
+          # without running tests. Strip before launching Unity.
+          foreach ($v in "HTTP_PROXY","HTTPS_PROXY","http_proxy","https_proxy","ALL_PROXY","all_proxy") {
+            $val = [Environment]::GetEnvironmentVariable($v, "Process")
+            if ($null -ne $val -and $val -ne "") {
+              Write-Host ("env: {0} was SET (len {1}) - removing for Unity" -f $v, $val.Length)
+              Remove-Item ("Env:\" + $v) -ErrorAction SilentlyContinue
+            } else {
+              Write-Host ("env: {0} not set" -f $v)
+            }
+          }
           $xmlPath = "$env:GITHUB_WORKSPACE\artifacts\editmode.xml"
           if (Test-Path $xmlPath) { Remove-Item $xmlPath -Force }
-          & $unity -batchmode -nographics `
-            -projectPath "$env:GITHUB_WORKSPACE" `
-            -runTests -testPlatform EditMode `
-            -testResults $xmlPath `
-            -logFile "$env:GITHUB_WORKSPACE\artifacts\unity-editmode.log"
-          $code = $LASTEXITCODE
+          $logPath = "$env:GITHUB_WORKSPACE\artifacts\unity-editmode.log"
+          if (Test-Path $logPath) { Remove-Item $logPath -Force }
+          # Start-Process (not &): local evidence shows Unity licensing fails when it
+          # inherits the runner's redirected stdout/stderr pipe handles via & in PS 5.1.
+          $p = Start-Process -FilePath $unity -ArgumentList '-batchmode','-nographics',('-projectPath "' + $env:GITHUB_WORKSPACE + '"'),'-runTests','-testPlatform','EditMode',('-testResults "' + $xmlPath + '"'),('-logFile "' + $logPath + '"') -Wait -PassThru
+          $code = $p.ExitCode
           Write-Host ("Unity exit code: " + $code)
           if (-not (Test-Path $xmlPath)) {
             Write-Host "::error::editmode.xml not produced - Unity exited before running tests (see unity-editmode.log)"
