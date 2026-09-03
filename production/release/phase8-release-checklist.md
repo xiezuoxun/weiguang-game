@@ -9,7 +9,7 @@
 ## A. 待本机真机补录项（Phase 7 留存，发布前必须闭合）
 | # | 项 | 状态 | 负责人 | 备注 / 验收口径 |
 |---|----|------|--------|----------------|
-| A1 | 真机降级帧率 ≥30fps（低内存机 ≤1024MB，Profiler 实测） | 🟡 | 程基岩 + 真机验收 | 探针代码就绪（`DeviceFpsProbe`）；回填表见 `phase8-device-fps.md` §6，待真机实测 avg≥30 翻 ✅；桌面端基线对照 ≥60 |
+| A1 | 真机降级帧率 ≥30fps（低内存机 ≤1024MB，Profiler 实测） | 🟡 待真机（当前无 ≤1024MB 设备） | 程基岩 + 真机验收 | 探针代码+真机链路就绪（`DeviceFpsProbe`）；**当前无真·低端机，C1 验收物理不可达 → A1 锁 🟡 待真机补录**，回填表见 `phase8-device-fps.md` §6；桌面端基线对照 ≥60 |
 | A2 | Canvas 真机 UI（首启四步引导 + 各面板真机渲染） | 🟡 | 程基岩 / 林绘澄 | `OnboardingCanvasView` 本机补全；真机核对 RectTransform 与动画 |
 | A3 | 美术资产最终版本（物件 / 碎片 / 结局卡 / 铺子主视觉） | 🟡 | 林绘澄 | 命名对齐 `item_id`/`fragment_id`/`ending_id`（见 `phase6-launch-assets.md` §4） |
 | A4 | 音频终混（BGM + 音效 `sound_cues.csv` 映射） | 🟡 | 阮和声 | 低频环境 + 收尾上行五度；旁白/低语混音定稿 |
