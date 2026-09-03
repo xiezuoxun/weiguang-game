@@ -46,18 +46,20 @@ jobs:
   # =============================================================================
   # 层 1 · Unity EditMode 测试门（G4/G5/G7）—— self-hosted runner 真跑（已启用）
   # -----------------------------------------------------------------------------
-  # 关键修复（Phase 7 P0-①）：原 ubuntu-latest + game-ci/unity-test-runner 在
-  #   GitHub-hosted runner 上跑 2022.3.x 会 docker 内 Unity 崩溃（exit 133 / SIGTRAP，
-  #   容器内存不足 + 镜像版本不匹配）。改 self-hosted runner 后，game-ci 在
-  #   Windows 本机上直接用已装的 Unity（不走 docker），exit 133 彻底消失，CI 真绿。
-  #   —— 本机 165/165 即 ground truth，self-hosted 只是把它搬到云端 CI 复跑。
+  # 关键修复（Phase 7 P0-①→③）：原 ubuntu-latest + game-ci/unity-test-runner 在
+  #   GitHub-hosted runner 上 docker 内 Unity 崩溃（exit 133 / SIGTRAP）。
+  #   改 self-hosted 后仍红：game-ci 系列是 docker action，本机未装 docker →
+  #   "Unable to locate executable file: docker"。
+  #   最终方案：不依赖 docker/game-ci，直接调用本机已装的 Unity.exe 批处理跑
+  #   EditMode（与本地手动命令一致）——本机 165/165 即 ground truth，CI 复跑同一条命令。
   #
   # 前置（用户本机一次性操作，详见 production/phase7-ci-selfhosted.md）：
   #   1. 仓库 Settings → Actions → Runners → New self-hosted runner（Windows x64）
   #      下载并解压到本机目录，在 PowerShell 跑 ./config.cmd（贴 repo URL + token，
   #      提示 Labels 时输入 `unity` 以便匹配下方 runs-on），再 ./run.cmd 常驻。
-  #   2. UNITY_LICENSE 等 Secrets 仍保留（本机已激活也可留空，game-ci 会复用本机 license）。
-  #   3. 本机需已装 Unity 2022.3.20f1 + 编辑器中（已就绪）。
+  #   2. runner 侧 PowerShell 执行策略须为 RemoteSigned（CurrentUser scope；
+  #      PS 5.1 默认 Restricted 会拒绝加载 runner 生成的 .ps1，所有 run: 步骤 exit 1）。
+  #   3. 本机需已装 Unity 2022.3.20f1 且已激活 license（Unity.exe 直接复用，无需 secrets）。
   # =============================================================================
   unity-tests:
     name: 层1 Unity EditMode 测试 (G4/G5/G7)
@@ -88,17 +90,28 @@ jobs:
           }
 
       - name: Run EditMode Tests
-        uses: game-ci/unity-test-runner@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: .
-          unityVersion: 2022.3.20f1
-          testMode: editmode
-          artifactsPath: artifacts
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Self-hosted Windows runner hosts Unity 2022.3.20f1 locally.
+          # game-ci/unity-test-runner is a docker action (docker not installed
+          # on this machine), so invoke the local Unity Editor directly.
+          # Exit codes: 0 = all tests passed, 2 = test failures, other = error.
+          $unity = 'C:\Program Files\Unity\Hub\Editor\2022.3.20f1\Editor\Unity.exe'
+          if (-not (Test-Path -LiteralPath $unity)) {
+            Write-Host "::error::Unity editor not found at $unity"
+            exit 3
+          }
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\artifacts" | Out-Null
+          & $unity -batchmode -nographics `
+            -projectPath "$env:GITHUB_WORKSPACE" `
+            -runTests -testPlatform EditMode `
+            -testResults "$env:GITHUB_WORKSPACE\artifacts\editmode.xml" `
+            -logFile "$env:GITHUB_WORKSPACE\artifacts\unity-editmode.log"
+          $code = $LASTEXITCODE
+          if (Test-Path "$env:GITHUB_WORKSPACE\artifacts\editmode.xml") {
+            [xml]$r = Get-Content "$env:GITHUB_WORKSPACE\artifacts\editmode.xml" -Raw
+            Write-Host ("EditMode total=" + $r.'test-run'.total + " passed=" + $r.'test-run'.passed + " failed=" + $r.'test-run'.failed)
+          }
+          exit $code
 
       - name: Upload EditMode Test Results
         if: always()
