@@ -48,7 +48,7 @@
 ## 验收总门
 - [x] P0-②-C1（沙箱+本机）：`DustBudget.cs`/`SessionRunner.VisualDustResolution`/`RevealVisualBridge` 接线 ✅；`DustReveal.shader` 已露 `_GridRes` + 低内存降采样 ✅（commit `a4e5839`）；EditMode `DustBudgetTests` 全绿（含本机修正的宽高比断言 0.5）。
 - [x] P0-②-C2（沙箱+本机）：`OnboardingFlow` 流转 + `OnboardingCanvasView` 面板/动画/持久化补全 ✅（commit `a4e5839`）；EditMode `OnboardingFlowTests` 全绿；本机首启弹 4 步引导并持久化（key `weiguang.onboarding.done`）。
-- [ ] P0-①：CI unity-tests 真绿（self-hosted runner 承接）—— `a4e5839` 已 push（远程 master=a4e5839，完整 Phase 7 已在库），但 **self-hosted runner 离线**：`e0ff3be` 的 #10 长期 `Queued`、#11 未生成/同卡；提交页显示 `1/2` 检查（layer0 契约门绿、layer1 待 runner 上线）。待本机 `./run.cmd` 常驻（label=`unity`）后重跑证真绿（日志见本机 `Unity.exe` 路径、无 exit 133 即真绿）。
+- [x] P0-①：CI unity-tests 真绿（self-hosted runner 承接）—— **已证（run #17 `6831f7a` Status Success，层0 契约门 11s + 层1 Unity EditMode 3m54s 双绿，EditMode-results 116KB，硬门 editmode.xml `total>0/failed=0/passed==total`，ci.yml 全文件无 `continue-on-error`；本地 `Unity.exe` `C:\Program Files\Unity\Hub\Editor\2022.3.20f1\Editor\Unity.exe` 直跑非 docker）**。演进链 #11→#13→#14→#15→#16→#17；根因：#13 真死因 = PS 5.1 把无 BOM UTF-8 `ci.yml` 当 ANSI 读（CJK 注释破坏 YAML 解析），与全局代理无关（#11 才是 checkout 阶段继承死代理 `127.0.0.1:29290` exit 128）；#17 启 Unity 前剥离继承代理 env 收口。详见 `phase7-closure-decision.md`（DONE 签收版）。
 
 > 真机降级帧率（低端机 Profiler 实测 ≥30fps）属本机真机验收项，桌面端已绿；用户本机实测后补录即可，不阻塞 Phase 7 收口。
 > commit `a4e5839` 经仓库 commit-msg hook 改写消息为「补 P0-② 遗漏的脚本 .meta…」，内容完整（源文件+`.meta` 均在）；`CODELY.md` 被 hook 一并带入，可后续按需 gitignore 清理。
